@@ -56,6 +56,17 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid rgba(37, 99, 235, .28);
+      outline-offset: 2px;
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: .38;
+    }
+
     input {
       -webkit-tap-highlight-color: transparent;
     }
@@ -256,6 +267,67 @@
       color: var(--muted);
       font-size: 13px;
       font-weight: 900;
+    }
+
+    .sound-card {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      align-items: start;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px 10px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .sound-card .row-icon {
+      width: 34px;
+      height: 34px;
+    }
+
+    .sound-card-main {
+      min-width: 0;
+    }
+
+    .sound-card-head,
+    .sound-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sound-card-head {
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .sound-volume-value {
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .sound-controls input[type="range"] {
+      flex: 1;
+      min-width: 0;
+      padding: 0;
+      accent-color: var(--blue);
+    }
+
+    .sound-test {
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding: 7px 12px;
+    }
+
+    .sound-hint {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
     }
 
     .section-head {
@@ -677,6 +749,10 @@
       padding: 12px;
     }
 
+    body.run-screen .ring.is-paused {
+      --phaseColor: #94a3b8 !important;
+    }
+
     body.run-screen .ring-inner {
       padding: 16px;
     }
@@ -755,22 +831,6 @@
       font-size: 12px;
     }
 
-    /* home screen only: no scroll */
-    body.home-screen {
-      height: 100dvh;
-      overflow: hidden;
-    }
-
-    body.home-screen .app {
-      height: 100dvh;
-      overflow: hidden;
-    }
-
-    body.home-screen main,
-    body.home-screen #home {
-      overflow: hidden;
-    }
-
     body.home-screen .topbar {
       margin-bottom: 6px;
     }
@@ -796,6 +856,26 @@
     body.home-screen .home-saved-button {
       min-height: 50px;
       margin-top: 10px;
+    }
+
+    body.home-screen .sound-card {
+      margin-top: 10px;
+    }
+
+    .notice {
+      position: fixed;
+      z-index: 50;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom) + 18px);
+      width: min(calc(100% - 24px), 406px);
+      transform: translateX(-50%);
+      padding: 13px 16px;
+      border-radius: 14px;
+      background: #0f172a;
+      color: #ffffff;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, .24);
+      text-align: center;
+      font-weight: 900;
     }
 
 </style>
@@ -861,6 +941,21 @@
           <small><span id="homeSavedComboCount">0</span>件</small>
           <span class="chev">›</span>
         </button>
+
+        <div class="sound-card" aria-labelledby="soundTitle">
+          <span class="row-icon blue-icon" aria-hidden="true">♪</span>
+          <div class="sound-card-main">
+            <div class="sound-card-head">
+              <span id="soundTitle" class="row-label">通知音量</span>
+              <strong id="soundVolumeValue" class="sound-volume-value">100%</strong>
+            </div>
+            <div class="sound-controls">
+              <input id="soundVolume" type="range" min="0" max="100" step="10" value="100" aria-label="通知音量">
+              <button id="soundTest" class="small blue sound-test" type="button">音を試す</button>
+            </div>
+            <p id="soundHint" class="sound-hint">端末のメディア音量にも連動します。</p>
+          </div>
+        </div>
       </section>
 
       <section id="quick" class="view">
@@ -872,17 +967,17 @@
           <div class="form-grid">
             <label>
               <span>Work（秒）</span>
-              <input id="quickWork" type="number" min="1" value="40">
+              <input id="quickWork" type="number" min="1" max="3600" inputmode="numeric" value="40">
             </label>
 
             <label>
               <span>Rest（秒）</span>
-              <input id="quickRest" type="number" min="1" value="20">
+              <input id="quickRest" type="number" min="1" max="3600" inputmode="numeric" value="20">
             </label>
 
             <label>
               <span>回数</span>
-              <input id="quickRepeat" type="number" min="1" value="8">
+              <input id="quickRepeat" type="number" min="1" max="100" inputmode="numeric" value="8">
             </label>
 
             <label>
@@ -914,17 +1009,17 @@
 
             <label>
               <span>Work（秒）</span>
-              <input id="menuWork" type="number" min="1" value="30">
+              <input id="menuWork" type="number" min="1" max="3600" inputmode="numeric" value="30">
             </label>
 
             <label>
               <span>Rest（秒）</span>
-              <input id="menuRest" type="number" min="1" value="15">
+              <input id="menuRest" type="number" min="1" max="3600" inputmode="numeric" value="15">
             </label>
 
             <label>
               <span>回数</span>
-              <input id="menuRepeat" type="number" min="1" value="4">
+              <input id="menuRepeat" type="number" min="1" max="100" inputmode="numeric" value="4">
             </label>
           </div>
 
@@ -1026,8 +1121,8 @@
           <div class="ring-wrap">
             <div id="ring" class="ring">
               <div class="ring-inner">
-                <p id="phase" class="phase">WORK</p>
-                <div id="time" class="time">00:40</div>
+                <p id="phase" class="phase" aria-live="polite">WORK</p>
+                <div id="time" class="time" role="timer" aria-label="残り時間">00:40</div>
                 <p id="step" class="step">1 / 16</p>
               </div>
             </div>
@@ -1057,12 +1152,15 @@
     </main>
   </div>
 
+  <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
+
   <script>
     const $ = (id) => document.getElementById(id);
 
     const store = {
       blocks: 'interval_blocks_single_v2',
-      combos: 'interval_combos_single_v2'
+      combos: 'interval_combos_single_v2',
+      soundVolume: 'interval_sound_volume_v1'
     };
 
     const legacyStore = {
@@ -1071,11 +1169,12 @@
     };
 
     const state = {
-      blocks: load(store.blocks, load(legacyStore.blocks, [])),
-      combos: load(store.combos, load(legacyStore.combos, [])),
+      blocks: loadArray(store.blocks, loadArray(legacyStore.blocks, [])),
+      combos: loadArray(store.combos, loadArray(legacyStore.combos, [])),
       builder: [],
       editingBlockId: null,
       editingComboId: null,
+      soundVolume: boundedInt(load(store.soundVolume, 100), 100, 0, 100),
       timer: {
         active: false,
         paused: false,
@@ -1086,9 +1185,14 @@
         duration: 0,
         totalLeft: 0,
         id: null,
-        beeped: null
+        beeped: null,
+        lastTickAt: null
       }
     };
+
+    let audioEngine = null;
+    let screenWakeLock = null;
+    let noticeTimer = null;
 
     const el = {
       homeBtn: $('homeBtn'),
@@ -1096,6 +1200,11 @@
       comboCount: $('comboCount'),
       homeSavedMenuCount: $('homeSavedMenuCount'),
       homeSavedComboCount: $('homeSavedComboCount'),
+      soundVolume: $('soundVolume'),
+      soundVolumeValue: $('soundVolumeValue'),
+      soundTest: $('soundTest'),
+      soundHint: $('soundHint'),
+      notice: $('notice'),
 
       quickWork: $('quickWork'),
       quickRest: $('quickRest'),
@@ -1147,8 +1256,11 @@
     $('comboStart').addEventListener('click', startBuilder);
     $('comboClear').addEventListener('click', clearComboBuilder);
     $('pause').addEventListener('click', pauseToggle);
-    $('skip').addEventListener('click', () => nextStep(true));
+    $('skip').addEventListener('click', skipStep);
     $('stop').addEventListener('click', () => stop(false));
+    el.soundVolume.addEventListener('input', updateSoundVolume);
+    el.soundTest.addEventListener('click', testSound);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     render();
 
@@ -1189,6 +1301,7 @@
       updateMenuEditUI();
       updateComboEditUI();
       updateComboTotal();
+      updateSoundUI();
 
       saveBlocks();
       saveCombos();
@@ -1198,9 +1311,9 @@
       return {
         id: crypto.randomUUID(),
         name: el.quickName.value.trim() || 'クイック開始',
-        work: num(el.quickWork.value, 40),
-        rest: num(el.quickRest.value, 20),
-        repeat: num(el.quickRepeat.value, 8)
+        work: num(el.quickWork.value, 40, 3600),
+        rest: num(el.quickRest.value, 20, 3600),
+        repeat: num(el.quickRepeat.value, 8, 100)
       };
     }
 
@@ -1220,9 +1333,9 @@
       return {
         id,
         name: el.menuName.value.trim() || `メニュー ${state.blocks.length + 1}`,
-        work: num(el.menuWork.value, 30),
-        rest: num(el.menuRest.value, 15),
-        repeat: num(el.menuRepeat.value, 4)
+        work: num(el.menuWork.value, 30, 3600),
+        rest: num(el.menuRest.value, 15, 3600),
+        repeat: num(el.menuRepeat.value, 4, 100)
       };
     }
 
@@ -1275,14 +1388,20 @@
     function updateMenuEditUI() {
       if (state.editingBlockId) {
         const block = state.blocks.find((b) => b.id === state.editingBlockId);
+        const title = document.createElement('span');
+        title.className = 'edit-title';
+        title.textContent = '編集中';
+
         el.menuEditBanner.classList.remove('hidden');
-        el.menuEditBanner.innerHTML =
-          `<span class="edit-title">編集中</span>${block ? block.name : 'メニュー'} を編集しています。変更後は「変更を保存」を押してください。`;
+        el.menuEditBanner.replaceChildren(
+          title,
+          document.createTextNode(`${block ? block.name : 'メニュー'} を編集しています。変更後は「変更を保存」を押してください。`)
+        );
         el.menuSave.textContent = '変更を保存';
         el.menuCancelEdit.classList.remove('hidden');
       } else {
         el.menuEditBanner.classList.add('hidden');
-        el.menuEditBanner.innerHTML = '';
+        el.menuEditBanner.replaceChildren();
         el.menuSave.textContent = '保存';
         el.menuCancelEdit.classList.add('hidden');
       }
@@ -1338,11 +1457,11 @@
 
     function menuCard(block, index) {
       return card(block.name, [`${block.work}秒 Work`, `${block.rest}秒 Rest`, `${block.repeat}回`], [
-        btn('開始', 'blue', () => start([block], block.name)),
-        btn('編集', '', () => editBlock(block.id)),
-        btn('削除', 'red', () => deleteBlock(block.id)),
-        btn('↑', '', () => moveSavedMenu(index, -1)),
-        btn('↓', '', () => moveSavedMenu(index, 1))
+        btn('開始', 'blue', () => start([block], block.name), { label: `${block.name}を開始` }),
+        btn('編集', '', () => editBlock(block.id), { label: `${block.name}を編集` }),
+        btn('削除', 'red', () => deleteBlock(block.id), { label: `${block.name}を削除` }),
+        btn('↑', '', () => moveSavedMenu(index, -1), { label: `${block.name}を上へ移動`, disabled: index === 0 }),
+        btn('↓', '', () => moveSavedMenu(index, 1), { label: `${block.name}を下へ移動`, disabled: index === state.blocks.length - 1 })
       ]);
     }
 
@@ -1357,7 +1476,7 @@
     function renderAvailable() {
       list(el.availableList, state.blocks, '先にメニューを保存してください。', (block) =>
         card(block.name, [`${block.work}秒 Work`, `${block.rest}秒 Rest`, `${block.repeat}回`], [
-          btn('追加', 'green', () => addBuilder(block.id))
+          btn('追加', 'green', () => addBuilder(block.id), { label: `${block.name}を組み合わせに追加` })
         ])
       );
     }
@@ -1374,12 +1493,12 @@
     function renderBuilder() {
       list(el.builderList, state.builder, 'ここにメニューを追加してください。', (block, index) =>
         card(`${index + 1}. ${block.name}`, [`${block.work}秒 Work`, `${block.rest}秒 Rest`, `${block.repeat}回`], [
-          btn('↑', '', () => moveBuilder(index, -1)),
-          btn('↓', '', () => moveBuilder(index, 1)),
+          btn('↑', '', () => moveBuilder(index, -1), { label: `${block.name}を上へ移動`, disabled: index === 0 }),
+          btn('↓', '', () => moveBuilder(index, 1), { label: `${block.name}を下へ移動`, disabled: index === state.builder.length - 1 }),
           btn('削除', 'red', () => {
             state.builder.splice(index, 1);
             render();
-          })
+          }, { label: `${block.name}を組み合わせから削除` })
         ])
       );
     }
@@ -1498,13 +1617,19 @@
     function updateComboEditUI() {
       if (state.editingComboId) {
         const combo = state.combos.find((c) => c.id === state.editingComboId);
+        const title = document.createElement('span');
+        title.className = 'edit-title';
+        title.textContent = '編集中';
+
         el.comboEditBanner.classList.remove('hidden');
-        el.comboEditBanner.innerHTML =
-          `<span class="edit-title">編集中</span>${combo ? combo.name : '組み合わせ'} を編集しています。変更後は「変更を保存」を押してください。`;
+        el.comboEditBanner.replaceChildren(
+          title,
+          document.createTextNode(`${combo ? combo.name : '組み合わせ'} を編集しています。変更後は「変更を保存」を押してください。`)
+        );
         el.comboSave.textContent = '変更を保存';
       } else {
         el.comboEditBanner.classList.add('hidden');
-        el.comboEditBanner.innerHTML = '';
+        el.comboEditBanner.replaceChildren();
         el.comboSave.textContent = '組み合わせを保存';
       }
     }
@@ -1516,10 +1641,10 @@
       );
 
       return card(combo.name, [`${combo.blocks.length}メニュー`, `合計 ${fmt(total)}`, combo.blocks.map((block) => block.name).join(' / ')], [
-        btn('開始', 'blue', () => start(combo.blocks, combo.name)),
-        btn('編集', '', () => editCombo(combo.id)),
-        btn('読込', '', () => loadCombo(combo.id)),
-        btn('削除', 'red', () => deleteCombo(combo.id))
+        btn('開始', 'blue', () => start(combo.blocks, combo.name), { label: `${combo.name}を開始` }),
+        btn('編集', '', () => editCombo(combo.id), { label: `${combo.name}を編集` }),
+        btn('読込', '', () => loadCombo(combo.id), { label: `${combo.name}を読み込む` }),
+        btn('削除', 'red', () => deleteCombo(combo.id), { label: `${combo.name}を削除` })
       ]);
     }
 
@@ -1532,11 +1657,15 @@
     }
 
     function start(blocks, title) {
+      playCue('ready');
+
       const steps = [
         {
           phase: 'START',
           duration: 5,
-          block: '準備'
+          block: '準備',
+          round: 0,
+          repeat: 0
         }
       ];
 
@@ -1545,13 +1674,17 @@
           steps.push({
             phase: 'WORK',
             duration: block.work,
-            block: block.name
+            block: block.name,
+            round: i + 1,
+            repeat: block.repeat
           });
 
           steps.push({
             phase: 'REST',
             duration: block.rest,
-            block: block.name
+            block: block.name,
+            round: i + 1,
+            repeat: block.repeat
           });
         }
       });
@@ -1568,12 +1701,14 @@
         duration: steps[0].duration,
         totalLeft: steps.reduce((sum, step) => sum + step.duration, 0),
         id: null,
-        beeped: null
+        beeped: null,
+        lastTickAt: performance.now()
       };
 
       show('run');
       drawRun();
       state.timer.id = setInterval(tick, 250);
+      requestWakeLock();
     }
 
     function tick() {
@@ -1581,32 +1716,52 @@
 
       if (!timer.active || timer.paused) return;
 
-      timer.remaining = Math.max(0, timer.remaining - 0.25);
-      timer.totalLeft = Math.max(0, timer.totalLeft - 0.25);
+      const now = performance.now();
+
+      if (!Number.isFinite(timer.lastTickAt)) {
+        timer.lastTickAt = now;
+        return;
+      }
+
+      let elapsed = Math.max(0, (now - timer.lastTickAt) / 1000);
+      timer.lastTickAt = now;
+      let changedStep = false;
+
+      while (timer.active && elapsed >= timer.remaining) {
+        elapsed -= timer.remaining;
+        timer.totalLeft = Math.max(0, timer.totalLeft - timer.remaining);
+        timer.remaining = 0;
+
+        if (!nextStep(false, true)) return;
+        changedStep = true;
+      }
+
+      if (!timer.active) return;
+
+      timer.remaining = Math.max(0, timer.remaining - elapsed);
+      timer.totalLeft = Math.max(0, timer.totalLeft - elapsed);
+
+      if (changedStep) {
+        playCurrentPhaseCue();
+        if (timer.remaining <= 3) {
+          timer.beeped = Math.ceil(timer.remaining);
+        }
+      }
 
       const second = Math.ceil(timer.remaining);
 
       if (second <= 3 && second >= 1 && timer.beeped !== second) {
-        if (second === 1) {
-          beep(880, 0.13, 'triangle');
-        } else {
-          beep(880, 0.13, 'triangle');
-        }
-
+        playCue('countdown');
         timer.beeped = second;
-      }
-
-      if (timer.remaining <= 0.001) {
-        beep(660, 1.50, 'sine');
-        nextStep(false);
-        return;
       }
 
       drawRun();
     }
 
-    function nextStep(fromSkip = false) {
+    function nextStep(fromSkip = false, silent = false) {
       const timer = state.timer;
+
+      if (!timer.active) return false;
 
       if (fromSkip && timer.remaining > 0) {
         timer.totalLeft = Math.max(0, timer.totalLeft - timer.remaining);
@@ -1617,13 +1772,22 @@
 
       if (timer.index >= timer.steps.length) {
         stop(true);
-        return;
+        return false;
       }
 
       timer.remaining = timer.steps[timer.index].duration;
       timer.duration = timer.steps[timer.index].duration;
+      timer.lastTickAt = performance.now();
+
+      if (!silent) {
+        playCurrentPhaseCue();
+        if (timer.remaining <= 3) {
+          timer.beeped = Math.ceil(timer.remaining);
+        }
+      }
 
       drawRun();
+      return true;
     }
 
     function pauseToggle() {
@@ -1631,20 +1795,42 @@
 
       if (!timer.active) return;
 
-      timer.paused = !timer.paused;
+      if (timer.paused) {
+        timer.paused = false;
+        timer.lastTickAt = performance.now();
+        requestWakeLock();
+      } else {
+        tick();
+        timer.paused = true;
+        timer.lastTickAt = null;
+        releaseWakeLock();
+      }
+
       el.pause.textContent = timer.paused ? '再開' : '一時停止';
+      drawRun();
+    }
+
+    function skipStep() {
+      if (!state.timer.active) return;
+      if (!state.timer.paused) tick();
+      nextStep(true);
     }
 
     function stop(done) {
+      if (!done && state.timer.active && !confirm('タイマーを終了しますか？')) return;
+
       clearInterval(state.timer.id);
 
       if (done) {
-        alert('メニューが完了しました。');
+        playCue('complete');
+        showNotice('メニューが完了しました');
       }
 
       state.timer.active = false;
       state.timer.paused = false;
+      state.timer.lastTickAt = null;
       el.pause.textContent = '一時停止';
+      releaseWakeLock();
 
       show('home');
       render();
@@ -1664,16 +1850,20 @@
 
       el.runTitle.textContent = timer.title;
       el.blockNameTag.textContent = step.block;
-      el.phase.textContent = isStart ? 'START' : step.phase;
-      el.phase.style.color = isStart
+      el.phase.textContent = timer.paused ? '一時停止' : isStart ? 'START' : step.phase;
+      el.phase.style.color = timer.paused
+        ? '#64748b'
+        : isStart
         ? 'var(--blue)'
         : isWork
           ? 'var(--green)'
           : 'var(--orange)';
 
       el.time.textContent = fmt(timer.remaining);
-      el.step.textContent = isStart ? '準備' : `${timer.index} / ${timer.steps.length - 1}`;
+      el.step.textContent = isStart ? '準備' : `${step.round} / ${step.repeat}`;
       el.totalLeft.textContent = fmt(timer.totalLeft);
+      el.pause.setAttribute('aria-pressed', String(timer.paused));
+      el.ring.classList.toggle('is-paused', timer.paused);
 
       el.ring.style.setProperty('--progress', progress.toFixed(2));
       el.ring.style.setProperty(
@@ -1704,45 +1894,209 @@
       }
 
       if (!names.length) {
-        root.innerHTML = '';
+        root.replaceChildren();
         return;
       }
 
-      root.innerHTML =
-        `<div class="upcoming-title">次以降のメニュー</div>` +
-        `<div class="upcoming-list">${names.map((name) => `<span>${name}</span>`).join('')}</div>`;
+      const title = document.createElement('div');
+      title.className = 'upcoming-title';
+      title.textContent = '次以降のメニュー';
+
+      const list = document.createElement('div');
+      list.className = 'upcoming-list';
+
+      names.forEach((name) => {
+        const item = document.createElement('span');
+        item.textContent = name;
+        list.appendChild(item);
+      });
+
+      root.replaceChildren(title, list);
     }
 
-    function beep(freq, dur, type) {
+    function updateSoundVolume() {
+      state.soundVolume = boundedInt(el.soundVolume.value, 100, 0, 100);
+      localStorage.setItem(store.soundVolume, JSON.stringify(state.soundVolume));
+      updateSoundUI();
+
+      if (audioEngine) {
+        const value = state.soundVolume / 100;
+        audioEngine.master.gain.setTargetAtTime(value, audioEngine.ctx.currentTime, 0.01);
+      }
+    }
+
+    function updateSoundUI() {
+      el.soundVolume.value = state.soundVolume;
+      el.soundVolumeValue.textContent = state.soundVolume === 0 ? 'ミュート' : `${state.soundVolume}%`;
+      el.soundHint.textContent = state.soundVolume === 0
+        ? '通知音はミュートされています。'
+        : '端末のメディア音量にも連動します。';
+    }
+
+    function testSound() {
+      const played = playCue('preview');
+
+      if (!played) {
+        el.soundHint.textContent = state.soundVolume === 0
+          ? '通知音はミュートされています。'
+          : 'この端末では通知音を再生できません。';
+      }
+    }
+
+    function ensureAudioEngine() {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
 
-      if (!AudioContext) return;
+      if (!AudioContext) return null;
 
-      if (!window.audioCtx) {
-        window.audioCtx = new AudioContext();
+      if (!audioEngine) {
+        let ctx;
+
+        try {
+          ctx = new AudioContext({ latencyHint: 'interactive' });
+        } catch {
+          ctx = new AudioContext();
+        }
+
+        const compressor = ctx.createDynamicsCompressor();
+        const master = ctx.createGain();
+
+        compressor.threshold.value = -24;
+        compressor.knee.value = 12;
+        compressor.ratio.value = 12;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.25;
+        master.gain.value = state.soundVolume / 100;
+
+        compressor.connect(master);
+        master.connect(ctx.destination);
+        audioEngine = { ctx, compressor, master };
       }
 
-      const ctx = window.audioCtx;
+      const { ctx } = audioEngine;
 
       if (ctx.state === 'suspended') {
-        ctx.resume();
+        ctx.resume().catch(() => {});
       }
 
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      return audioEngine;
+    }
 
-      osc.type = type;
-      osc.frequency.value = freq;
+    function playCue(kind) {
+      if (state.soundVolume === 0) return false;
 
-      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(3.00, ctx.currentTime + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+      const engine = ensureAudioEngine();
+      if (!engine) return false;
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      const patterns = {
+        ready: [
+          { at: 0, freq: 880, duration: 0.16 },
+          { at: 0.22, freq: 1175, duration: 0.28 }
+        ],
+        preview: [
+          { at: 0, freq: 880, duration: 0.16 },
+          { at: 0.22, freq: 1175, duration: 0.32 }
+        ],
+        countdown: [
+          { at: 0, freq: 1000, duration: 0.2 }
+        ],
+        work: [
+          { at: 0, freq: 880, duration: 0.18 },
+          { at: 0.24, freq: 1175, duration: 0.32 }
+        ],
+        rest: [
+          { at: 0, freq: 660, duration: 0.42 }
+        ],
+        complete: [
+          { at: 0, freq: 784, duration: 0.18 },
+          { at: 0.23, freq: 988, duration: 0.18 },
+          { at: 0.46, freq: 1319, duration: 0.5 }
+        ]
+      };
 
-      osc.start();
-      osc.stop(ctx.currentTime + dur + 0.03);
+      const pattern = patterns[kind] || patterns.countdown;
+      pattern.forEach((tone) => scheduleTone(engine, tone));
+      return true;
+    }
+
+    function scheduleTone(engine, tone) {
+      const { ctx, compressor } = engine;
+      const startAt = ctx.currentTime + tone.at;
+      const endAt = startAt + tone.duration;
+      const voices = [
+        { ratio: 1, type: 'square', level: 0.32 },
+        { ratio: 2, type: 'sine', level: 0.16 }
+      ];
+
+      voices.forEach((voice) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = voice.type;
+        osc.frequency.value = tone.freq * voice.ratio;
+        gain.gain.setValueAtTime(0.0001, startAt);
+        gain.gain.exponentialRampToValueAtTime(voice.level, startAt + 0.012);
+        gain.gain.setValueAtTime(voice.level, Math.max(startAt + 0.013, endAt - 0.055));
+        gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
+
+        osc.connect(gain);
+        gain.connect(compressor);
+        osc.start(startAt);
+        osc.stop(endAt + 0.03);
+      });
+    }
+
+    function playCurrentPhaseCue() {
+      const phase = state.timer.steps[state.timer.index]?.phase;
+
+      if (phase === 'WORK') {
+        playCue('work');
+      } else if (phase === 'REST') {
+        playCue('rest');
+      }
+    }
+
+    async function requestWakeLock() {
+      if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+
+      try {
+        if (screenWakeLock) return;
+        const lock = await navigator.wakeLock.request('screen');
+
+        if (!state.timer.active || state.timer.paused) {
+          lock.release().catch(() => {});
+          return;
+        }
+
+        screenWakeLock = lock;
+        lock.addEventListener('release', () => {
+          screenWakeLock = null;
+        });
+      } catch {
+        screenWakeLock = null;
+      }
+    }
+
+    function releaseWakeLock() {
+      if (!screenWakeLock) return;
+      screenWakeLock.release().catch(() => {});
+      screenWakeLock = null;
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible' && state.timer.active && !state.timer.paused) {
+        tick();
+        requestWakeLock();
+      }
+    }
+
+    function showNotice(message) {
+      clearTimeout(noticeTimer);
+      el.notice.textContent = message;
+      el.notice.classList.remove('hidden');
+
+      noticeTimer = setTimeout(() => {
+        el.notice.classList.add('hidden');
+      }, 3200);
     }
 
     function list(root, items, emptyText, builder) {
@@ -1793,10 +2147,17 @@
       return item;
     }
 
-    function btn(text, cls, fn) {
+    function btn(text, cls, fn, options = {}) {
       const button = document.createElement('button');
+      button.type = 'button';
       button.className = `small ${cls || ''}`;
       button.textContent = text;
+      button.disabled = Boolean(options.disabled);
+
+      if (options.label) {
+        button.setAttribute('aria-label', options.label);
+      }
+
       button.addEventListener('click', fn);
       return button;
     }
@@ -1808,17 +2169,31 @@
       return `${minutes}:${seconds}`;
     }
 
-    function num(value, fallback) {
+    function num(value, fallback, max = 3600) {
       const parsed = parseInt(value, 10);
-      return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+      return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, max) : fallback;
+    }
+
+    function boundedInt(value, fallback, min, max) {
+      const parsed = parseInt(value, 10);
+      return Number.isFinite(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
     }
 
     function load(key, fallback) {
       try {
-        return JSON.parse(localStorage.getItem(key)) || fallback;
+        const raw = localStorage.getItem(key);
+        if (raw === null) return fallback;
+
+        const value = JSON.parse(raw);
+        return value ?? fallback;
       } catch {
         return fallback;
       }
+    }
+
+    function loadArray(key, fallback) {
+      const value = load(key, fallback);
+      return Array.isArray(value) ? value : fallback;
     }
 
     function saveBlocks() {
@@ -1840,13 +2215,5 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
 
