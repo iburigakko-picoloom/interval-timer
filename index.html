@@ -2274,12 +2274,12 @@
       if (!engine) return false;
 
       const cues = {
-        ready: { freq: 660, duration: 0.12 },
-        preview: { freq: 880, duration: 0.14 },
-        countdown: { freq: 880, duration: 0.12 },
-        work: { freq: 880, duration: 0.14 },
-        rest: { freq: 660, duration: 0.14 },
-        complete: { freq: 988, duration: 0.28 }
+        ready: { freq: 988, duration: 0.32 },
+        preview: { freq: 988, duration: 0.32 },
+        countdown: { freq: 988, duration: 0.22 },
+        work: { freq: 988, duration: 0.32 },
+        rest: { freq: 784, duration: 0.24 },
+        complete: { freq: 988, duration: 0.48 }
       };
 
       scheduleTone(engine, cues[kind] || cues.countdown);
