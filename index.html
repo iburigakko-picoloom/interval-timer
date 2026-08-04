@@ -895,7 +895,7 @@
     }
 
     body.home-screen .mock-phone-card {
-      padding: 14px;
+      padding: 16px;
       margin-bottom: 0;
       border-radius: 18px;
       border-color: #dfe7f1;
@@ -903,10 +903,10 @@
     }
 
     body.home-screen .big-start {
-      min-height: 56px;
+      min-height: 60px;
       margin-top: 0;
       border-radius: 13px;
-      font-size: 19px;
+      font-size: 20px;
       box-shadow: 0 8px 18px rgba(37, 99, 235, .20);
     }
 
@@ -914,22 +914,22 @@
     .saved-links {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 8px;
+      gap: 10px;
+      margin-top: 10px;
     }
 
     .home-shortcuts .setting-row,
     .saved-links .home-saved-button {
       display: grid;
-      grid-template-columns: 30px minmax(0, 1fr) 12px;
+      grid-template-columns: 36px minmax(0, 1fr) 14px;
       grid-template-rows: auto auto;
-      gap: 0 8px;
-      min-height: 60px;
+      gap: 2px 10px;
+      min-height: 76px;
       margin: 0;
-      padding: 10px;
-      border: 1px solid #e3e9f1;
-      border-radius: 12px;
-      background: #f8fafc;
+      padding: 12px;
+      border: 1px solid #dbe4ef;
+      border-radius: 14px;
+      background: #ffffff;
       box-shadow: none;
     }
 
@@ -938,11 +938,9 @@
     .saved-links .home-saved-button .row-icon {
       grid-column: 1;
       grid-row: 1 / span 2;
-      width: 30px;
-      height: 30px;
-      background: #eef2f7;
-      color: #475569;
-      font-size: 14px;
+      width: 36px;
+      height: 36px;
+      font-size: 17px;
     }
 
     .home-shortcuts .row-label,
@@ -951,7 +949,7 @@
       grid-row: 1;
       min-width: 0;
       overflow: hidden;
-      font-size: 13px;
+      font-size: 15px;
       line-height: 1.25;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -962,7 +960,7 @@
       grid-column: 2;
       grid-row: 2;
       color: var(--muted);
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.2;
     }
 
@@ -971,8 +969,42 @@
       grid-column: 3;
       grid-row: 1 / span 2;
       align-self: center;
-      color: #94a3b8;
-      font-size: 17px;
+      color: #64748b;
+      font-size: 20px;
+    }
+
+    .home-shortcuts .setting-row:first-child,
+    .saved-links .home-saved-button:first-child {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+
+    .home-shortcuts .setting-row:last-child,
+    .saved-links .home-saved-button:last-child {
+      border-color: #fed7aa;
+      background: #fff7ed;
+    }
+
+    .home-shortcuts .green-icon,
+    .saved-links .green-icon {
+      background: #22c55e;
+      color: #ffffff;
+    }
+
+    .home-shortcuts .orange-icon,
+    .saved-links .orange-icon {
+      background: #f97316;
+      color: #ffffff;
+    }
+
+    .home-shortcuts .setting-row:first-child .row-label,
+    .saved-links .home-saved-button:first-child .row-label {
+      color: #166534;
+    }
+
+    .home-shortcuts .setting-row:last-child .row-label,
+    .saved-links .home-saved-button:last-child .row-label {
+      color: #9a3412;
     }
 
     body.home-screen .sound-card {
