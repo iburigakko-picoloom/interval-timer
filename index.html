@@ -862,21 +862,31 @@
       margin-top: 10px;
     }
 
-    /* flat, compact home layout */
+    /* calm, compact home layout */
+    #homeBtn {
+      width: auto;
+      min-height: 42px;
+      padding: 9px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
     body.home-screen .app {
-      padding-top: calc(env(safe-area-inset-top) + 8px);
+      max-width: 520px;
+      padding-top: calc(env(safe-area-inset-top) + 10px);
       padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
     }
 
     body.home-screen .topbar {
       position: static;
-      padding: 0 0 6px;
-      margin-bottom: 6px;
+      padding: 0 2px 8px;
+      margin-bottom: 4px;
       background: transparent;
       backdrop-filter: none;
     }
 
-    body.home-screen .topbar .eyebrow {
+    body.home-screen .topbar .eyebrow,
+    body.home-screen .home-title-row {
       display: none;
     }
 
@@ -885,26 +895,19 @@
     }
 
     body.home-screen .mock-phone-card {
-      padding: 12px;
-      margin-bottom: 8px;
-      border-radius: 14px;
-      box-shadow: none;
-    }
-
-    body.home-screen .home-title-row {
-      margin-bottom: 8px;
-    }
-
-    body.home-screen .home-title-row h2 {
-      font-size: 18px;
+      padding: 14px;
+      margin-bottom: 0;
+      border-radius: 18px;
+      border-color: #dfe7f1;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
     }
 
     body.home-screen .big-start {
-      min-height: 54px;
+      min-height: 56px;
       margin-top: 0;
-      border-radius: 12px;
-      font-size: 20px;
-      box-shadow: none;
+      border-radius: 13px;
+      font-size: 19px;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, .20);
     }
 
     .home-shortcuts,
@@ -912,32 +915,38 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
+      margin-top: 8px;
     }
 
-    .home-shortcuts {
-      margin-top: 10px;
-    }
-
-    .home-shortcuts .setting-row {
+    .home-shortcuts .setting-row,
+    .saved-links .home-saved-button {
       display: grid;
-      grid-template-columns: 28px minmax(0, 1fr) 14px;
+      grid-template-columns: 30px minmax(0, 1fr) 12px;
       grid-template-rows: auto auto;
-      gap: 0 7px;
-      min-height: 52px;
-      padding: 8px;
+      gap: 0 8px;
+      min-height: 60px;
+      margin: 0;
+      padding: 10px;
+      border: 1px solid #e3e9f1;
       border-radius: 12px;
+      background: #f8fafc;
       box-shadow: none;
     }
 
-    .home-shortcuts .setting-row .row-icon {
+    .home-shortcuts .row-icon,
+    .saved-links .row-icon,
+    .saved-links .home-saved-button .row-icon {
       grid-column: 1;
       grid-row: 1 / span 2;
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
+      background: #eef2f7;
+      color: #475569;
       font-size: 14px;
     }
 
-    .home-shortcuts .setting-row .row-label {
+    .home-shortcuts .row-label,
+    .saved-links .row-label {
       grid-column: 2;
       grid-row: 1;
       min-width: 0;
@@ -948,7 +957,8 @@
       white-space: nowrap;
     }
 
-    .home-shortcuts .setting-row .row-value {
+    .home-shortcuts .row-value,
+    .saved-links .home-saved-button small {
       grid-column: 2;
       grid-row: 2;
       color: var(--muted);
@@ -956,106 +966,57 @@
       line-height: 1.2;
     }
 
-    .home-shortcuts .setting-row .chev {
+    .home-shortcuts .chev,
+    .saved-links .chev {
       grid-column: 3;
       grid-row: 1 / span 2;
       align-self: center;
-      font-size: 18px;
-    }
-
-    .saved-links {
-      margin-top: 8px;
-    }
-
-    .saved-links .home-saved-button {
-      display: grid;
-      grid-template-columns: 28px minmax(0, 1fr) 14px;
-      grid-template-rows: auto auto;
-      gap: 0 7px;
-      min-height: 54px;
-      margin-top: 0;
-      padding: 8px;
-      border-radius: 12px;
-      box-shadow: none;
-    }
-
-    .saved-links .home-saved-button .row-icon {
-      grid-column: 1;
-      grid-row: 1 / span 2;
-      width: 28px;
-      height: 28px;
-      font-size: 14px;
-    }
-
-    .saved-links .home-saved-button .row-label {
-      grid-column: 2;
-      grid-row: 1;
-      min-width: 0;
-      overflow: hidden;
-      font-size: 13px;
-      line-height: 1.25;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .saved-links .home-saved-button small {
-      grid-column: 2;
-      grid-row: 2;
-      font-size: 11px;
-      line-height: 1.2;
-    }
-
-    .saved-links .home-saved-button .chev {
-      grid-column: 3;
-      grid-row: 1 / span 2;
-      align-self: center;
-      font-size: 18px;
+      color: #94a3b8;
+      font-size: 17px;
     }
 
     body.home-screen .sound-card {
       display: grid;
-      grid-template-columns: 28px minmax(0, 1fr);
-      gap: 8px;
-      margin-top: 8px;
-      padding: 9px 10px;
-      border-radius: 12px;
+      grid-template-columns: 30px minmax(0, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px 0 0;
+      border: 0;
+      border-top: 1px solid #e3e9f1;
+      border-radius: 0;
+      background: transparent;
       box-shadow: none;
     }
 
     body.home-screen .sound-card .row-icon {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       font-size: 14px;
     }
 
     body.home-screen .sound-card-main {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto auto;
-      align-items: center;
-      gap: 0 8px;
+      display: block;
       min-width: 0;
     }
 
     body.home-screen .sound-card-head,
     body.home-screen .sound-controls {
-      display: contents;
+      display: flex;
+      align-items: center;
     }
 
-    body.home-screen .sound-card-head .sound-volume-value {
-      grid-column: 4;
-      grid-row: 1;
+    body.home-screen .sound-card-head {
+      justify-content: space-between;
+      margin-bottom: 6px;
     }
 
-    body.home-screen .sound-controls input[type="range"] {
-      grid-column: 2;
-      grid-row: 1;
+    body.home-screen .sound-controls {
+      gap: 8px;
     }
 
     body.home-screen .sound-test {
-      grid-column: 3;
-      grid-row: 1;
-      min-height: 34px;
-      padding: 6px 9px;
+      min-height: 36px;
+      padding: 6px 10px;
     }
 
     body.home-screen .sound-hint {
@@ -1063,10 +1024,6 @@
     }
 
     @media (min-width: 620px) {
-      body.home-screen .app {
-        max-width: 720px;
-      }
-
       #quick .form-grid,
       #menu .form-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1082,14 +1039,10 @@
       }
     }
 
-    @media (max-width: 360px) {
+    @media (max-width: 340px) {
       .home-shortcuts,
       .saved-links {
         grid-template-columns: 1fr;
-      }
-
-      body.home-screen .sound-card-main {
-        grid-template-columns: auto minmax(0, 1fr) auto auto;
       }
     }
 
@@ -1221,10 +1174,6 @@
     <main>
       <section id="home" class="view active">
         <div class="mock-phone-card">
-          <div class="home-title-row">
-            <h2>すぐ開始</h2>
-          </div>
-
           <button class="big-start" data-view="quick">▶ クイック開始</button>
 
           <div class="home-shortcuts" aria-label="作成メニュー">
@@ -1242,36 +1191,36 @@
               <span class="chev">›</span>
             </button>
           </div>
-        </div>
 
-        <div class="saved-links" aria-label="保存済み">
-          <button class="home-saved-button" data-view="savedMenus">
-            <span class="row-icon green-icon">✓</span>
-            <span class="row-label">保存メニュー</span>
-            <small><span id="homeSavedMenuCount">0</span>件</small>
-            <span class="chev">›</span>
-          </button>
+          <div class="saved-links" aria-label="保存済み">
+            <button class="home-saved-button" data-view="savedMenus">
+              <span class="row-icon green-icon">✓</span>
+              <span class="row-label">保存メニュー</span>
+              <small><span id="homeSavedMenuCount">0</span>件</small>
+              <span class="chev">›</span>
+            </button>
 
-          <button class="home-saved-button" data-view="savedCombos">
-            <span class="row-icon orange-icon">★</span>
-            <span class="row-label">保存組み合わせ</span>
-            <small><span id="homeSavedComboCount">0</span>件</small>
-            <span class="chev">›</span>
-          </button>
-        </div>
+            <button class="home-saved-button" data-view="savedCombos">
+              <span class="row-icon orange-icon">★</span>
+              <span class="row-label">保存組み合わせ</span>
+              <small><span id="homeSavedComboCount">0</span>件</small>
+              <span class="chev">›</span>
+            </button>
+          </div>
 
-        <div class="sound-card" aria-labelledby="soundTitle">
-          <span class="row-icon blue-icon" aria-hidden="true">♪</span>
-          <div class="sound-card-main">
-            <div class="sound-card-head">
-              <span id="soundTitle" class="row-label">通知音量</span>
-              <strong id="soundVolumeValue" class="sound-volume-value">100%</strong>
+          <div class="sound-card" aria-labelledby="soundTitle">
+            <span class="row-icon blue-icon" aria-hidden="true">♪</span>
+            <div class="sound-card-main">
+              <div class="sound-card-head">
+                <span id="soundTitle" class="row-label">通知音量</span>
+                <strong id="soundVolumeValue" class="sound-volume-value">100%</strong>
+              </div>
+              <div class="sound-controls">
+                <input id="soundVolume" type="range" min="0" max="100" step="10" value="100" aria-label="通知音量">
+                <button id="soundTest" class="small blue sound-test" type="button">音を試す</button>
+              </div>
+              <p id="soundHint" class="sound-hint">短い単音の通知音です。端末のメディア音量にも連動します。</p>
             </div>
-            <div class="sound-controls">
-              <input id="soundVolume" type="range" min="0" max="100" step="10" value="100" aria-label="通知音量">
-              <button id="soundTest" class="small blue sound-test" type="button">音を試す</button>
-            </div>
-            <p id="soundHint" class="sound-hint">短い単音の通知音です。端末のメディア音量にも連動します。</p>
           </div>
         </div>
       </section>
@@ -2278,11 +2227,11 @@
         const compressor = ctx.createDynamicsCompressor();
         const master = ctx.createGain();
 
-        compressor.threshold.value = -24;
-        compressor.knee.value = 12;
-        compressor.ratio.value = 12;
-        compressor.attack.value = 0.003;
-        compressor.release.value = 0.25;
+        compressor.threshold.value = -3;
+        compressor.knee.value = 0;
+        compressor.ratio.value = 20;
+        compressor.attack.value = 0.001;
+        compressor.release.value = 0.08;
         master.gain.value = state.soundVolume / 100;
 
         compressor.connect(master);
@@ -2328,8 +2277,8 @@
       osc.type = 'sine';
       osc.frequency.value = tone.freq;
       gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.exponentialRampToValueAtTime(0.42, startAt + 0.008);
-      gain.gain.setValueAtTime(0.42, Math.max(startAt + 0.009, endAt - 0.045));
+      gain.gain.exponentialRampToValueAtTime(0.85, startAt + 0.006);
+      gain.gain.setValueAtTime(0.85, Math.max(startAt + 0.007, endAt - 0.04));
       gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
 
       osc.connect(gain);
