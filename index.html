@@ -913,7 +913,7 @@
     .home-shortcuts,
     .saved-links {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr;
       gap: 10px;
       margin-top: 10px;
     }
@@ -921,7 +921,7 @@
     .home-shortcuts .setting-row,
     .saved-links .home-saved-button {
       display: grid;
-      grid-template-columns: 36px minmax(0, 1fr) 14px;
+      grid-template-columns: 36px minmax(0, 1fr);
       grid-template-rows: auto auto;
       gap: 2px 10px;
       min-height: 76px;
@@ -962,15 +962,6 @@
       color: var(--muted);
       font-size: 12px;
       line-height: 1.2;
-    }
-
-    .home-shortcuts .chev,
-    .saved-links .chev {
-      grid-column: 3;
-      grid-row: 1 / span 2;
-      align-self: center;
-      color: #64748b;
-      font-size: 20px;
     }
 
     .home-shortcuts .setting-row:first-child,
@@ -1213,14 +1204,12 @@
               <span class="row-icon green-icon">✎</span>
               <span class="row-label">メニュー作成</span>
               <span class="row-value"><span id="blockCount">0</span>件</span>
-              <span class="chev">›</span>
             </button>
 
             <button class="setting-row" data-view="combo">
               <span class="row-icon orange-icon">☰</span>
               <span class="row-label">組み合わせ</span>
               <span class="row-value"><span id="comboCount">0</span>件</span>
-              <span class="chev">›</span>
             </button>
           </div>
 
@@ -1229,14 +1218,12 @@
               <span class="row-icon green-icon">✓</span>
               <span class="row-label">保存メニュー</span>
               <small><span id="homeSavedMenuCount">0</span>件</small>
-              <span class="chev">›</span>
             </button>
 
             <button class="home-saved-button" data-view="savedCombos">
               <span class="row-icon orange-icon">★</span>
               <span class="row-label">保存組み合わせ</span>
               <small><span id="homeSavedComboCount">0</span>件</small>
-              <span class="chev">›</span>
             </button>
           </div>
 
@@ -2292,7 +2279,7 @@
         countdown: { freq: 880, duration: 0.12 },
         work: { freq: 880, duration: 0.14 },
         rest: { freq: 660, duration: 0.14 },
-        complete: { freq: 880, duration: 0.28 }
+        complete: { freq: 988, duration: 0.28 }
       };
 
       scheduleTone(engine, cues[kind] || cues.countdown);
