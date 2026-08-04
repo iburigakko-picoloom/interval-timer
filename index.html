@@ -862,6 +862,329 @@
       margin-top: 10px;
     }
 
+    /* flat, compact home layout */
+    body.home-screen .app {
+      padding-top: calc(env(safe-area-inset-top) + 8px);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    }
+
+    body.home-screen .topbar {
+      position: static;
+      padding: 0 0 6px;
+      margin-bottom: 6px;
+      background: transparent;
+      backdrop-filter: none;
+    }
+
+    body.home-screen .topbar .eyebrow {
+      display: none;
+    }
+
+    body.home-screen .topbar h1 {
+      font-size: 20px;
+    }
+
+    body.home-screen .mock-phone-card {
+      padding: 12px;
+      margin-bottom: 8px;
+      border-radius: 14px;
+      box-shadow: none;
+    }
+
+    body.home-screen .home-title-row {
+      margin-bottom: 8px;
+    }
+
+    body.home-screen .home-title-row h2 {
+      font-size: 18px;
+    }
+
+    body.home-screen .big-start {
+      min-height: 54px;
+      margin-top: 0;
+      border-radius: 12px;
+      font-size: 20px;
+      box-shadow: none;
+    }
+
+    .home-shortcuts,
+    .saved-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .home-shortcuts {
+      margin-top: 10px;
+    }
+
+    .home-shortcuts .setting-row {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) 14px;
+      grid-template-rows: auto auto;
+      gap: 0 7px;
+      min-height: 52px;
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    .home-shortcuts .setting-row .row-icon {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+
+    .home-shortcuts .setting-row .row-label {
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
+      overflow: hidden;
+      font-size: 13px;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .home-shortcuts .setting-row .row-value {
+      grid-column: 2;
+      grid-row: 2;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .home-shortcuts .setting-row .chev {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      align-self: center;
+      font-size: 18px;
+    }
+
+    .saved-links {
+      margin-top: 8px;
+    }
+
+    .saved-links .home-saved-button {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr) 14px;
+      grid-template-rows: auto auto;
+      gap: 0 7px;
+      min-height: 54px;
+      margin-top: 0;
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    .saved-links .home-saved-button .row-icon {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+
+    .saved-links .home-saved-button .row-label {
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
+      overflow: hidden;
+      font-size: 13px;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .saved-links .home-saved-button small {
+      grid-column: 2;
+      grid-row: 2;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .saved-links .home-saved-button .chev {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      align-self: center;
+      font-size: 18px;
+    }
+
+    body.home-screen .sound-card {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    body.home-screen .sound-card .row-icon {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+    }
+
+    body.home-screen .sound-card-main {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 0 8px;
+      min-width: 0;
+    }
+
+    body.home-screen .sound-card-head,
+    body.home-screen .sound-controls {
+      display: contents;
+    }
+
+    body.home-screen .sound-card-head .sound-volume-value {
+      grid-column: 4;
+      grid-row: 1;
+    }
+
+    body.home-screen .sound-controls input[type="range"] {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    body.home-screen .sound-test {
+      grid-column: 3;
+      grid-row: 1;
+      min-height: 34px;
+      padding: 6px 9px;
+    }
+
+    body.home-screen .sound-hint {
+      display: none;
+    }
+
+    @media (min-width: 620px) {
+      body.home-screen .app {
+        max-width: 720px;
+      }
+
+      #quick .form-grid,
+      #menu .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      #quick .form-grid label:last-child,
+      #menu .form-grid label:first-child {
+        grid-column: 1 / -1;
+      }
+
+      #combo .combo-layout {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 360px) {
+      .home-shortcuts,
+      .saved-links {
+        grid-template-columns: 1fr;
+      }
+
+      body.home-screen .sound-card-main {
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+      }
+    }
+
+    @media (max-width: 619px) and (max-height: 760px) {
+      #quick .panel,
+      #menu .panel {
+        padding: 12px;
+      }
+
+      #menu .two-actions:has(#menuCancelEdit.hidden) {
+        grid-template-columns: 1fr;
+      }
+
+      #quick .form-grid,
+      #menu .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      #quick .actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      #quick .btn,
+      #menu .btn {
+        min-height: 46px;
+        padding: 10px 12px;
+      }
+
+      #quick label,
+      #menu label {
+        gap: 4px;
+      }
+
+      #quick label span,
+      #menu label span {
+        font-size: 12px;
+      }
+
+      #quick input,
+      #menu input {
+        min-height: 44px;
+        padding: 10px 12px;
+      }
+    }
+
+    @media (max-width: 619px) and (max-height: 620px) {
+      body.run-screen .app {
+        padding-top: 6px;
+        padding-bottom: 12px;
+      }
+
+      body.run-screen #run .panel {
+        padding: 10px;
+      }
+
+      body.run-screen .run-head {
+        margin-bottom: 2px;
+      }
+
+      body.run-screen .ring-wrap {
+        margin: 2px 0 6px;
+      }
+
+      body.run-screen .ring {
+        width: min(52vw, 205px);
+        height: min(52vw, 205px);
+        padding: 10px;
+      }
+
+      body.run-screen .info-grid {
+        gap: 6px;
+      }
+
+      body.run-screen .info {
+        padding: 7px 9px;
+      }
+
+      body.run-screen .run-actions {
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      body.run-screen .run-actions .btn {
+        min-height: 42px;
+        padding: 8px;
+      }
+
+      body.run-screen .upcoming-menus {
+        margin-top: 5px;
+      }
+    }
+
     .notice {
       position: fixed;
       z-index: 50;
@@ -899,17 +1222,12 @@
       <section id="home" class="view active">
         <div class="mock-phone-card">
           <div class="home-title-row">
-            <h2>インターバルタイマー</h2>
+            <h2>すぐ開始</h2>
           </div>
 
-          <div class="menu-list">
-            <button class="setting-row" data-view="quick">
-              <span class="row-icon blue-icon">▶</span>
-              <span class="row-label">クイック開始</span>
-              <span class="row-value">開始</span>
-              <span class="chev">›</span>
-            </button>
+          <button class="big-start" data-view="quick">▶ クイック開始</button>
 
+          <div class="home-shortcuts" aria-label="作成メニュー">
             <button class="setting-row" data-view="menu">
               <span class="row-icon green-icon">✎</span>
               <span class="row-label">メニュー作成</span>
@@ -924,23 +1242,23 @@
               <span class="chev">›</span>
             </button>
           </div>
-
-          <button class="big-start" data-view="quick">▶ クイック開始</button>
         </div>
 
-        <button class="home-saved-button" data-view="savedMenus">
-          <span class="row-icon green-icon">✓</span>
-          <span class="row-label">保存済みメニュー</span>
-          <small><span id="homeSavedMenuCount">0</span>件</small>
-          <span class="chev">›</span>
-        </button>
+        <div class="saved-links" aria-label="保存済み">
+          <button class="home-saved-button" data-view="savedMenus">
+            <span class="row-icon green-icon">✓</span>
+            <span class="row-label">保存メニュー</span>
+            <small><span id="homeSavedMenuCount">0</span>件</small>
+            <span class="chev">›</span>
+          </button>
 
-        <button class="home-saved-button" data-view="savedCombos">
-          <span class="row-icon orange-icon">★</span>
-          <span class="row-label">保存済み組み合わせ</span>
-          <small><span id="homeSavedComboCount">0</span>件</small>
-          <span class="chev">›</span>
-        </button>
+          <button class="home-saved-button" data-view="savedCombos">
+            <span class="row-icon orange-icon">★</span>
+            <span class="row-label">保存組み合わせ</span>
+            <small><span id="homeSavedComboCount">0</span>件</small>
+            <span class="chev">›</span>
+          </button>
+        </div>
 
         <div class="sound-card" aria-labelledby="soundTitle">
           <span class="row-icon blue-icon" aria-hidden="true">♪</span>
@@ -953,7 +1271,7 @@
               <input id="soundVolume" type="range" min="0" max="100" step="10" value="100" aria-label="通知音量">
               <button id="soundTest" class="small blue sound-test" type="button">音を試す</button>
             </div>
-            <p id="soundHint" class="sound-hint">端末のメディア音量にも連動します。</p>
+            <p id="soundHint" class="sound-hint">短い単音の通知音です。端末のメディア音量にも連動します。</p>
           </div>
         </div>
       </section>
@@ -1930,7 +2248,7 @@
       el.soundVolumeValue.textContent = state.soundVolume === 0 ? 'ミュート' : `${state.soundVolume}%`;
       el.soundHint.textContent = state.soundVolume === 0
         ? '通知音はミュートされています。'
-        : '端末のメディア音量にも連動します。';
+        : '短い単音の通知音です。端末のメディア音量にも連動します。';
     }
 
     function testSound() {
@@ -1987,62 +2305,37 @@
       const engine = ensureAudioEngine();
       if (!engine) return false;
 
-      const patterns = {
-        ready: [
-          { at: 0, freq: 880, duration: 0.16 },
-          { at: 0.22, freq: 1175, duration: 0.28 }
-        ],
-        preview: [
-          { at: 0, freq: 880, duration: 0.16 },
-          { at: 0.22, freq: 1175, duration: 0.32 }
-        ],
-        countdown: [
-          { at: 0, freq: 1000, duration: 0.2 }
-        ],
-        work: [
-          { at: 0, freq: 880, duration: 0.18 },
-          { at: 0.24, freq: 1175, duration: 0.32 }
-        ],
-        rest: [
-          { at: 0, freq: 660, duration: 0.42 }
-        ],
-        complete: [
-          { at: 0, freq: 784, duration: 0.18 },
-          { at: 0.23, freq: 988, duration: 0.18 },
-          { at: 0.46, freq: 1319, duration: 0.5 }
-        ]
+      const cues = {
+        ready: { freq: 660, duration: 0.12 },
+        preview: { freq: 880, duration: 0.14 },
+        countdown: { freq: 880, duration: 0.12 },
+        work: { freq: 880, duration: 0.14 },
+        rest: { freq: 660, duration: 0.14 },
+        complete: { freq: 880, duration: 0.28 }
       };
 
-      const pattern = patterns[kind] || patterns.countdown;
-      pattern.forEach((tone) => scheduleTone(engine, tone));
+      scheduleTone(engine, cues[kind] || cues.countdown);
       return true;
     }
 
     function scheduleTone(engine, tone) {
       const { ctx, compressor } = engine;
-      const startAt = ctx.currentTime + tone.at;
+      const startAt = ctx.currentTime;
       const endAt = startAt + tone.duration;
-      const voices = [
-        { ratio: 1, type: 'square', level: 0.32 },
-        { ratio: 2, type: 'sine', level: 0.16 }
-      ];
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-      voices.forEach((voice) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = tone.freq;
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.42, startAt + 0.008);
+      gain.gain.setValueAtTime(0.42, Math.max(startAt + 0.009, endAt - 0.045));
+      gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
 
-        osc.type = voice.type;
-        osc.frequency.value = tone.freq * voice.ratio;
-        gain.gain.setValueAtTime(0.0001, startAt);
-        gain.gain.exponentialRampToValueAtTime(voice.level, startAt + 0.012);
-        gain.gain.setValueAtTime(voice.level, Math.max(startAt + 0.013, endAt - 0.055));
-        gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
-
-        osc.connect(gain);
-        gain.connect(compressor);
-        osc.start(startAt);
-        osc.stop(endAt + 0.03);
-      });
+      osc.connect(gain);
+      gain.connect(compressor);
+      osc.start(startAt);
+      osc.stop(endAt + 0.03);
     }
 
     function playCurrentPhaseCue() {
@@ -2215,5 +2508,3 @@
   </script>
 </body>
 </html>
-
-
