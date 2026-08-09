@@ -1,4 +1,4 @@
-const CACHE_NAME = 'interval-timer-pwa-v27';
+const CACHE_NAME = 'interval-timer-pwa-v28';
 const ASSETS = ['./','./index.html','./manifest.json','./sw.js','./icons/timer-192.png','./icons/timer-512.png','./icons/flame-192.png','./icons/flame-512.png','./icons/bolt-192.png','./icons/bolt-512.png','./icons/dumbbell-192.png','./icons/dumbbell-512.png','./icons/rings-192.png','./icons/rings-512.png'];
 self.addEventListener('install', (event) => { event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', (event) => { event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))); self.clients.claim(); });

@@ -1441,6 +1441,40 @@
       border-top-color: var(--line);
     }
 
+    .home-section {
+      margin-top: 12px;
+      padding: 8px 12px 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .home-section-title {
+      margin: 0;
+      padding: 2px 2px 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .home-section .home-shortcuts,
+    .home-section .saved-links {
+      margin-top: 0;
+    }
+
+    .home-section .setting-row:last-child,
+    .home-section .home-saved-button:last-child {
+      border-bottom: 0;
+    }
+
+    body.home-screen .sound-card {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
     body.run-screen .info {
       border-radius: 8px;
     }
@@ -1466,28 +1500,34 @@
         <div class="mock-phone-card">
           <button class="big-start" data-view="quick">クイック開始</button>
 
-          <div class="home-shortcuts" aria-label="作成メニュー">
-            <button class="setting-row" data-view="menu">
-              <span class="row-label">メニュー作成</span>
-              <span class="row-value"><span id="blockCount">0</span>件</span>
-            </button>
+          <div class="home-section">
+            <p class="home-section-title">作成</p>
+            <div class="home-shortcuts" aria-label="作成メニュー">
+              <button class="setting-row" data-view="menu">
+                <span class="row-label">メニュー作成</span>
+                <span class="row-value"><span id="blockCount">0</span>件</span>
+              </button>
 
-            <button class="setting-row" data-view="combo">
-              <span class="row-label">組み合わせ</span>
-              <span class="row-value"><span id="comboCount">0</span>件</span>
-            </button>
+              <button class="setting-row" data-view="combo">
+                <span class="row-label">組み合わせ</span>
+                <span class="row-value"><span id="comboCount">0</span>件</span>
+              </button>
+            </div>
           </div>
 
-          <div class="saved-links" aria-label="保存済み">
-            <button class="home-saved-button" data-view="savedMenus">
-              <span class="row-label">保存メニュー</span>
-              <small><span id="homeSavedMenuCount">0</span>件</small>
-            </button>
+          <div class="home-section">
+            <p class="home-section-title">保存済み</p>
+            <div class="saved-links" aria-label="保存済み">
+              <button class="home-saved-button" data-view="savedMenus">
+                <span class="row-label">保存メニュー</span>
+                <small><span id="homeSavedMenuCount">0</span>件</small>
+              </button>
 
-            <button class="home-saved-button" data-view="savedCombos">
-              <span class="row-label">保存組み合わせ</span>
-              <small><span id="homeSavedComboCount">0</span>件</small>
-            </button>
+              <button class="home-saved-button" data-view="savedCombos">
+                <span class="row-label">保存組み合わせ</span>
+                <small><span id="homeSavedComboCount">0</span>件</small>
+              </button>
+            </div>
           </div>
 
           <div class="sound-card" aria-labelledby="soundTitle">
