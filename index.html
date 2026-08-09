@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#2563eb" />
+  <meta name="theme-color" content="#f4f4f5" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>インターバルタイマー</title>
 
   <style>
     :root {
-      --bg: #f7fbff;
+      --bg: #f4f4f5;
       --panel: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --line: #dbe4f1;
-      --blue: #2563eb;
+      --text: #18181b;
+      --muted: #71717a;
+      --line: #d4d4d8;
+      --blue: #1d4ed8;
       --blueWeak: #eff6ff;
-      --green: #22c55e;
-      --greenWeak: #ecfdf5;
-      --orange: #f97316;
-      --orangeWeak: #fff7ed;
-      --red: #ef4444;
-      --shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
+      --green: #15803d;
+      --greenWeak: #f0fdf4;
+      --orange: #b45309;
+      --orangeWeak: #fffbeb;
+      --red: #dc2626;
+      --shadow: none;
     }
 
     * {
@@ -1177,6 +1177,274 @@
       font-weight: 900;
     }
 
+    /* Simple, flat visual system */
+    h1,
+    h2,
+    h3,
+    .row-label,
+    .row-value,
+    .item-title,
+    .mini-head,
+    .combo-total,
+    .phase,
+    .time {
+      font-weight: 700;
+    }
+
+    .topbar {
+      align-items: center;
+      background: rgba(244, 244, 245, .96);
+      backdrop-filter: none;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .panel,
+    .home-saved-button,
+    .mock-phone-card,
+    .sound-card {
+      border-color: var(--line);
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    .setting-row,
+    .home-saved-button {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      min-height: 54px;
+      padding: 12px 4px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .row-icon {
+      display: none;
+    }
+
+    .row-label,
+    .row-value {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .row-value,
+    .home-saved-button small {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .big-start {
+      min-height: 56px;
+      border-radius: 8px;
+      background: var(--blue);
+      box-shadow: none;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .sound-card {
+      grid-template-columns: 1fr;
+      padding: 14px 4px 0;
+      background: transparent;
+      border: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .sound-volume-value {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    label span,
+    .upcoming-title {
+      font-weight: 600;
+    }
+
+    input {
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .btn {
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .primary {
+      background: var(--blue);
+    }
+
+    .secondary {
+      background: #f4f4f5;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .ghost {
+      background: #ffffff;
+    }
+
+    .danger {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .item,
+    .empty,
+    .edit-banner,
+    .combo-total,
+    .info {
+      border-radius: 8px;
+      box-shadow: none;
+    }
+
+    .item,
+    .empty {
+      background: #ffffff;
+    }
+
+    .small {
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .small.blue,
+    .small.green {
+      background: #f4f4f5;
+      color: var(--text);
+      border-color: var(--line);
+    }
+
+    .small.red {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .edit-banner {
+      background: var(--blueWeak);
+      border-color: #bfdbfe;
+      color: #1e40af;
+    }
+
+    .edit-banner .edit-title {
+      color: #1e40af;
+    }
+
+    .tag,
+    .upcoming-list span {
+      border-radius: 6px;
+    }
+
+    .ring-inner {
+      box-shadow: none;
+    }
+
+    .notice {
+      border-radius: 8px;
+      box-shadow: none;
+      font-weight: 700;
+    }
+
+    .wake-status {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .wake-status[data-state="active"] {
+      color: #166534;
+    }
+
+    .wake-status[data-state="unsupported"] {
+      color: #b45309;
+    }
+
+    body.home-screen .mock-phone-card {
+      padding: 14px;
+      border-color: var(--line);
+      border-radius: 12px;
+      box-shadow: none;
+    }
+
+    body.home-screen .big-start {
+      min-height: 56px;
+      border-radius: 8px;
+      background: var(--blue);
+      box-shadow: none;
+      font-size: 18px;
+    }
+
+    .home-shortcuts,
+    .saved-links {
+      gap: 0;
+      margin-top: 10px;
+    }
+
+    .home-shortcuts .setting-row,
+    .saved-links .home-saved-button {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: auto;
+      min-height: 54px;
+      padding: 12px 4px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .home-shortcuts .row-label,
+    .saved-links .row-label,
+    .home-shortcuts .row-value,
+    .saved-links .home-saved-button small {
+      grid-column: auto;
+      grid-row: auto;
+      color: inherit;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .home-shortcuts .row-value,
+    .saved-links .home-saved-button small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .home-shortcuts .setting-row:first-child,
+    .home-shortcuts .setting-row:last-child,
+    .saved-links .home-saved-button:first-child,
+    .saved-links .home-saved-button:last-child {
+      border-color: var(--line);
+      background: transparent;
+    }
+
+    .home-shortcuts .setting-row:first-child .row-label,
+    .home-shortcuts .setting-row:last-child .row-label,
+    .saved-links .home-saved-button:first-child .row-label,
+    .saved-links .home-saved-button:last-child .row-label {
+      color: var(--text);
+    }
+
+    body.home-screen .sound-card {
+      grid-template-columns: 1fr;
+      padding: 12px 4px 0;
+      border-top-color: var(--line);
+    }
+
+    body.run-screen .info {
+      border-radius: 8px;
+    }
+
 </style>
   <meta name="description" content="スマホで使えるインターバルタイマー" />
   <link rel="manifest" href="./manifest.json" />
@@ -1188,7 +1456,6 @@
   <div class="app">
     <header class="topbar">
       <div>
-        <p class="eyebrow">SMARTPHONE TIMER</p>
         <h1>インターバルタイマー</h1>
       </div>
       <button id="homeBtn" class="btn ghost hidden">ホーム</button>
@@ -1197,17 +1464,15 @@
     <main>
       <section id="home" class="view active">
         <div class="mock-phone-card">
-          <button class="big-start" data-view="quick">▶ クイック開始</button>
+          <button class="big-start" data-view="quick">クイック開始</button>
 
           <div class="home-shortcuts" aria-label="作成メニュー">
             <button class="setting-row" data-view="menu">
-              <span class="row-icon green-icon">✎</span>
               <span class="row-label">メニュー作成</span>
               <span class="row-value"><span id="blockCount">0</span>件</span>
             </button>
 
             <button class="setting-row" data-view="combo">
-              <span class="row-icon orange-icon">☰</span>
               <span class="row-label">組み合わせ</span>
               <span class="row-value"><span id="comboCount">0</span>件</span>
             </button>
@@ -1215,20 +1480,17 @@
 
           <div class="saved-links" aria-label="保存済み">
             <button class="home-saved-button" data-view="savedMenus">
-              <span class="row-icon green-icon">✓</span>
               <span class="row-label">保存メニュー</span>
               <small><span id="homeSavedMenuCount">0</span>件</small>
             </button>
 
             <button class="home-saved-button" data-view="savedCombos">
-              <span class="row-icon orange-icon">★</span>
               <span class="row-label">保存組み合わせ</span>
               <small><span id="homeSavedComboCount">0</span>件</small>
             </button>
           </div>
 
           <div class="sound-card" aria-labelledby="soundTitle">
-            <span class="row-icon blue-icon" aria-hidden="true">♪</span>
             <div class="sound-card-main">
               <div class="sound-card-head">
                 <span id="soundTitle" class="row-label">通知音量</span>
@@ -1252,12 +1514,12 @@
 
           <div class="form-grid">
             <label>
-              <span>Work（秒）</span>
+              <span>運動（秒）</span>
               <input id="quickWork" type="number" min="1" max="3600" inputmode="numeric" value="40">
             </label>
 
             <label>
-              <span>Rest（秒）</span>
+              <span>休憩（秒）</span>
               <input id="quickRest" type="number" min="1" max="3600" inputmode="numeric" value="20">
             </label>
 
@@ -1294,12 +1556,12 @@
             </label>
 
             <label>
-              <span>Work（秒）</span>
+              <span>運動（秒）</span>
               <input id="menuWork" type="number" min="1" max="3600" inputmode="numeric" value="30">
             </label>
 
             <label>
-              <span>Rest（秒）</span>
+              <span>休憩（秒）</span>
               <input id="menuRest" type="number" min="1" max="3600" inputmode="numeric" value="15">
             </label>
 
@@ -1400,6 +1662,7 @@
             <div>
               <p class="eyebrow">実行中</p>
               <h2 id="runTitle">インターバル</h2>
+              <p id="wakeStatus" class="wake-status" data-state="idle" role="status">スリープ防止を準備中</p>
             </div>
             <span id="blockNameTag" class="tag">-</span>
           </div>
@@ -1525,7 +1788,8 @@
       step: $('step'),
       next: $('next'),
       totalLeft: $('totalLeft'),
-      pause: $('pause')
+      pause: $('pause'),
+      wakeStatus: $('wakeStatus')
     };
 
     document.querySelectorAll('[data-view]').forEach((btn) => {
@@ -2136,7 +2400,7 @@
 
       el.runTitle.textContent = timer.title;
       el.blockNameTag.textContent = step.block;
-      el.phase.textContent = timer.paused ? '一時停止' : isStart ? 'START' : step.phase;
+      el.phase.textContent = timer.paused ? '一時停止' : isStart ? '準備' : isWork ? '運動' : '休憩';
       el.phase.style.color = timer.paused
         ? '#64748b'
         : isStart
@@ -2158,7 +2422,8 @@
       );
 
       const next = timer.steps[timer.index + 1];
-      el.next.textContent = next ? `${next.phase} ${fmt(next.duration)}` : '終了';
+      const nextPhase = next?.phase === 'WORK' ? '運動' : next?.phase === 'REST' ? '休憩' : '準備';
+      el.next.textContent = next ? `${nextPhase} ${fmt(next.duration)}` : '終了';
 
       drawUpcomingMenus();
     }
@@ -2317,30 +2582,69 @@
     }
 
     async function requestWakeLock() {
-      if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+      if (!('wakeLock' in navigator)) {
+        updateWakeStatus('この端末ではスリープ防止を利用できません', 'unsupported');
+        return false;
+      }
+
+      if (document.visibilityState !== 'visible') {
+        updateWakeStatus('画面に戻るとスリープ防止を再開します', 'idle');
+        return false;
+      }
 
       try {
-        if (screenWakeLock) return;
+        if (screenWakeLock) {
+          updateWakeStatus('画面のスリープを防止中', 'active');
+          return true;
+        }
+
+        updateWakeStatus('スリープ防止を準備中', 'idle');
         const lock = await navigator.wakeLock.request('screen');
 
         if (!state.timer.active || state.timer.paused) {
           lock.release().catch(() => {});
-          return;
+          updateWakeStatus('一時停止中はスリープを許可します', 'idle');
+          return false;
         }
 
         screenWakeLock = lock;
+        updateWakeStatus('画面のスリープを防止中', 'active');
         lock.addEventListener('release', () => {
-          screenWakeLock = null;
+          if (screenWakeLock === lock) screenWakeLock = null;
+
+          if (!state.timer.active) return;
+
+          if (state.timer.paused) {
+            updateWakeStatus('一時停止中はスリープを許可します', 'idle');
+          } else if (document.visibilityState !== 'visible') {
+            updateWakeStatus('画面に戻るとスリープ防止を再開します', 'idle');
+          } else {
+            updateWakeStatus('スリープ防止が解除されました', 'unsupported');
+          }
         });
+        return true;
       } catch {
         screenWakeLock = null;
+        updateWakeStatus('この端末ではスリープ防止を利用できません', 'unsupported');
+        return false;
       }
     }
 
     function releaseWakeLock() {
-      if (!screenWakeLock) return;
-      screenWakeLock.release().catch(() => {});
+      if (!screenWakeLock) {
+        if (state.timer.active && state.timer.paused) {
+          updateWakeStatus('一時停止中はスリープを許可します', 'idle');
+        }
+        return;
+      }
+
+      const lock = screenWakeLock;
       screenWakeLock = null;
+      lock.release().catch(() => {});
+
+      if (state.timer.active && state.timer.paused) {
+        updateWakeStatus('一時停止中はスリープを許可します', 'idle');
+      }
     }
 
     function handleVisibilityChange() {
@@ -2348,6 +2652,12 @@
         tick();
         requestWakeLock();
       }
+    }
+
+    function updateWakeStatus(message, status) {
+      if (!el.wakeStatus) return;
+      el.wakeStatus.textContent = message;
+      el.wakeStatus.dataset.state = status;
     }
 
     function showNotice(message) {
