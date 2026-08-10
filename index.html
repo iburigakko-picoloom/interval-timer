@@ -1475,6 +1475,88 @@
       background: #ffffff;
     }
 
+    .saved-menu-head {
+      align-items: center;
+    }
+
+    .saved-menu-edit-toggle {
+      width: auto;
+      min-width: 64px;
+      min-height: 40px;
+      padding: 8px 14px;
+    }
+
+    .saved-menu-edit-toggle.is-active {
+      background: var(--blue);
+      color: #ffffff;
+      border-color: var(--blue);
+    }
+
+    .saved-menu-edit-hint {
+      margin: -2px 0 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f4f4f5;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .saved-menu-card.normal .small-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .saved-menu-card.editing .small-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .saved-menu-sortable {
+      position: relative;
+      transition: border-color .15s ease, background-color .15s ease, opacity .15s ease;
+    }
+
+    .saved-menu-sortable.is-dragging {
+      z-index: 3;
+      border-color: var(--blue);
+      background: var(--blueWeak);
+      opacity: .92;
+    }
+
+    .reorder-handle {
+      width: 100%;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border: 1px dashed var(--line);
+      border-radius: 6px;
+      background: #f4f4f5;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .reorder-handle::before {
+      content: "↕";
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .saved-menu-sortable.is-dragging .reorder-handle {
+      border-style: solid;
+      border-color: var(--blue);
+      background: #ffffff;
+      color: var(--blue);
+    }
+
     body.run-screen .info {
       border-radius: 8px;
     }
@@ -1670,9 +1752,12 @@
 
       <section id="savedMenus" class="view">
         <div class="panel">
-          <div class="section-head">
+          <div class="section-head saved-menu-head">
             <h2>保存済みメニュー</h2>
+            <button id="savedMenuEditToggle" class="small saved-menu-edit-toggle" type="button">編集</button>
           </div>
+
+          <p id="savedMenuEditHint" class="saved-menu-edit-hint hidden">「長押しで並び替え」を押したまま上下に動かしてください。削除も編集中だけ表示されます。</p>
 
           <div class="page-head-actions">
             <button class="btn primary" data-view="menu">メニューを作成</button>
@@ -1763,6 +1848,7 @@
       builder: [],
       editingBlockId: null,
       editingComboId: null,
+      savedMenusEditing: false,
       soundVolume: boundedInt(load(store.soundVolume, 100), 100, 0, 100),
       timer: {
         active: false,
@@ -1810,6 +1896,8 @@
 
       menuList: $('menuList'),
       savedMenuPageList: $('savedMenuPageList'),
+      savedMenuEditToggle: $('savedMenuEditToggle'),
+      savedMenuEditHint: $('savedMenuEditHint'),
 
       availableList: $('availableList'),
       builderList: $('builderList'),
@@ -1842,6 +1930,7 @@
     $('quickSave').addEventListener('click', quickSave);
     $('menuSave').addEventListener('click', saveMenu);
     $('menuCancelEdit').addEventListener('click', clearMenuEdit);
+    el.savedMenuEditToggle.addEventListener('click', toggleSavedMenusEdit);
     $('comboSave').addEventListener('click', saveCombo);
     $('comboStart').addEventListener('click', startBuilder);
     $('comboClear').addEventListener('click', clearComboBuilder);
@@ -1857,6 +1946,12 @@
     function show(id) {
       const target = $(id);
       if (!target) return;
+
+      if (id !== 'savedMenus' && state.savedMenusEditing) {
+        state.savedMenusEditing = false;
+        updateSavedMenuEditUI();
+        renderSavedMenuPage();
+      }
 
       document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
       target.classList.add('active');
@@ -1883,6 +1978,7 @@
       el.homeSavedComboCount.textContent = state.combos.length;
 
       renderMenus();
+      updateSavedMenuEditUI();
       renderSavedMenuPage();
       renderAvailable();
       renderBuilder();
@@ -2018,6 +2114,10 @@
       state.blocks = state.blocks.filter((block) => block.id !== id);
       state.builder = state.builder.filter((block) => block.id !== id);
 
+      if (!state.blocks.length) {
+        state.savedMenusEditing = false;
+      }
+
       state.combos = state.combos
         .map((combo) => ({
           ...combo,
@@ -2038,21 +2138,177 @@
       const nextIndex = index + direction;
       if (nextIndex < 0 || nextIndex >= state.blocks.length) return;
 
+      const movedId = state.blocks[index].id;
+
       [state.blocks[index], state.blocks[nextIndex]] =
         [state.blocks[nextIndex], state.blocks[index]];
 
       saveBlocks();
       render();
+      showNotice('並び順を保存しました');
+
+      requestAnimationFrame(() => {
+        const handle = el.savedMenuPageList.querySelector(`[data-menu-id="${CSS.escape(movedId)}"] .reorder-handle`);
+        handle?.focus();
+      });
     }
 
-    function menuCard(block, index) {
-      return card(block.name, [`${block.work}秒 Work`, `${block.rest}秒 Rest`, `${block.repeat}回`], [
+    function menuCard(block) {
+      return card(block.name, [`${block.work}秒 運動`, `${block.rest}秒 休憩`, `${block.repeat}回`], [
         btn('開始', 'blue', () => start([block], block.name), { label: `${block.name}を開始` }),
-        btn('編集', '', () => editBlock(block.id), { label: `${block.name}を編集` }),
-        btn('削除', 'red', () => deleteBlock(block.id), { label: `${block.name}を削除` }),
-        btn('↑', '', () => moveSavedMenu(index, -1), { label: `${block.name}を上へ移動`, disabled: index === 0 }),
-        btn('↓', '', () => moveSavedMenu(index, 1), { label: `${block.name}を下へ移動`, disabled: index === state.blocks.length - 1 })
+        btn('内容編集', '', () => editBlock(block.id), { label: `${block.name}の内容を編集` })
       ]);
+    }
+
+    function toggleSavedMenusEdit() {
+      if (!state.blocks.length) return;
+      state.savedMenusEditing = !state.savedMenusEditing;
+      updateSavedMenuEditUI();
+      renderSavedMenuPage();
+    }
+
+    function updateSavedMenuEditUI() {
+      if (!state.blocks.length) {
+        state.savedMenusEditing = false;
+      }
+
+      el.savedMenuEditToggle.disabled = state.blocks.length === 0;
+      el.savedMenuEditToggle.textContent = state.savedMenusEditing ? '完了' : '編集';
+      el.savedMenuEditToggle.classList.toggle('is-active', state.savedMenusEditing);
+      el.savedMenuEditHint.classList.toggle('hidden', !state.savedMenusEditing);
+    }
+
+    function savedMenuCard(block) {
+      const editing = state.savedMenusEditing;
+      const buttons = editing
+        ? [
+            btn('内容編集', '', () => editBlock(block.id), { label: `${block.name}の内容を編集` }),
+            btn('削除', 'red', () => deleteBlock(block.id), { label: `${block.name}を削除` })
+          ]
+        : [btn('開始', 'blue', () => start([block], block.name), { label: `${block.name}を開始` })];
+
+      const item = card(
+        block.name,
+        [`${block.work}秒 運動`, `${block.rest}秒 休憩`, `${block.repeat}回`],
+        buttons
+      );
+
+      item.classList.add('saved-menu-card', editing ? 'editing' : 'normal');
+
+      if (!editing) return item;
+
+      item.classList.add('saved-menu-sortable');
+      item.dataset.menuId = block.id;
+
+      const handle = document.createElement('button');
+      handle.type = 'button';
+      handle.className = 'reorder-handle';
+      handle.textContent = '長押しで並び替え';
+      handle.setAttribute('aria-label', `${block.name}を長押しして並び替え`);
+      item.prepend(handle);
+      attachSavedMenuReorder(item, handle, block.id);
+
+      return item;
+    }
+
+    function attachSavedMenuReorder(item, handle, menuId) {
+      let pressTimer = null;
+      let pointerId = null;
+      let startX = 0;
+      let startY = 0;
+      let sorting = false;
+
+      const clearPressTimer = () => {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      };
+
+      const finishSort = () => {
+        clearPressTimer();
+
+        const wasSorting = sorting;
+        sorting = false;
+
+        if (pointerId !== null && handle.hasPointerCapture?.(pointerId)) {
+          handle.releasePointerCapture(pointerId);
+        }
+
+        pointerId = null;
+
+        if (!wasSorting) return;
+
+        item.classList.remove('is-dragging');
+        persistSavedMenuOrder();
+      };
+
+      handle.addEventListener('click', (event) => event.preventDefault());
+
+      handle.addEventListener('keydown', (event) => {
+        if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+        event.preventDefault();
+
+        const index = state.blocks.findIndex((block) => block.id === menuId);
+        moveSavedMenu(index, event.key === 'ArrowUp' ? -1 : 1);
+      });
+
+      handle.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+        pointerId = event.pointerId;
+        startX = event.clientX;
+        startY = event.clientY;
+        handle.setPointerCapture?.(pointerId);
+
+        pressTimer = setTimeout(() => {
+          sorting = true;
+          item.classList.add('is-dragging');
+          handle.textContent = '上下に動かしてください';
+        }, 450);
+      });
+
+      handle.addEventListener('pointermove', (event) => {
+        if (!sorting) {
+          if (Math.hypot(event.clientX - startX, event.clientY - startY) > 10) {
+            clearPressTimer();
+          }
+          return;
+        }
+
+        event.preventDefault();
+
+        if (event.clientY < 72) window.scrollBy(0, -8);
+        if (event.clientY > window.innerHeight - 72) window.scrollBy(0, 8);
+
+        const target = document
+          .elementFromPoint(event.clientX, event.clientY)
+          ?.closest('#savedMenuPageList .saved-menu-sortable');
+
+        if (!target || target === item) return;
+
+        const rect = target.getBoundingClientRect();
+        const insertBefore = event.clientY < rect.top + rect.height / 2;
+        el.savedMenuPageList.insertBefore(item, insertBefore ? target : target.nextSibling);
+      });
+
+      handle.addEventListener('pointerup', finishSort);
+      handle.addEventListener('pointercancel', finishSort);
+      handle.addEventListener('lostpointercapture', finishSort);
+    }
+
+    function persistSavedMenuOrder() {
+      const ids = [...el.savedMenuPageList.querySelectorAll('.saved-menu-sortable')]
+        .map((item) => item.dataset.menuId);
+
+      if (ids.length !== state.blocks.length) {
+        renderSavedMenuPage();
+        return;
+      }
+
+      const blocksById = new Map(state.blocks.map((block) => [block.id, block]));
+      state.blocks = ids.map((id) => blocksById.get(id)).filter(Boolean);
+      saveBlocks();
+      render();
+      showNotice('並び順を保存しました');
     }
 
     function renderMenus() {
@@ -2060,7 +2316,8 @@
     }
 
     function renderSavedMenuPage() {
-      list(el.savedMenuPageList, state.blocks, 'まだ保存されたメニューはありません。', menuCard);
+      el.savedMenuPageList.classList.toggle('editing', state.savedMenusEditing);
+      list(el.savedMenuPageList, state.blocks, 'まだ保存されたメニューはありません。', savedMenuCard);
     }
 
     function renderAvailable() {
