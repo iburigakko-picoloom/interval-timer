@@ -1,12 +1,80 @@
-const CACHE_NAME = 'interval-timer-pwa-v29';
-const ASSETS = ['./','./index.html','./manifest.json','./sw.js','./icons/timer-192.png','./icons/timer-512.png','./icons/flame-192.png','./icons/flame-512.png','./icons/bolt-192.png','./icons/bolt-512.png','./icons/dumbbell-192.png','./icons/dumbbell-512.png','./icons/rings-192.png','./icons/rings-512.png'];
-self.addEventListener('install', (event) => { event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))); self.skipWaiting(); });
-self.addEventListener('activate', (event) => { event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))); self.clients.claim(); });
+const CACHE_PREFIX = 'interval-timer-pwa-';
+const CACHE_NAME = `${CACHE_PREFIX}v33`;
+const APP_SHELL = [
+  './',
+  './index.html',
+  './styles.css?v=33',
+  './app.js?v=33',
+  './app-core.js?v=33',
+  './storage-lock.js?v=33',
+  './manifest.json',
+  './icons/timer-192.png',
+  './icons/timer-512.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(
+        keys
+          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).then((response) => { const copy = response.clone(); caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy)); return response; }).catch(() => caches.match('./index.html')));
+  const request = event.request;
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(async (response) => {
+          if (response.status >= 500) {
+            return (await caches.match('./index.html')) || response;
+          }
+          if (!response.ok) return response;
+          const copy = response.clone();
+          try {
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put('./index.html', copy);
+          } catch {
+            // A successful network response should still be usable when cache writes fail.
+          }
+          return response;
+        })
+        .catch(async () => (await caches.match('./index.html')) || Response.error())
+    );
     return;
   }
-  event.respondWith(caches.match(event.request).then((cached) => { if (cached) return cached; return fetch(event.request).then((response) => { const copy = response.clone(); caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)); return response; }).catch(() => caches.match('./index.html')); }));
+
+  event.respondWith(
+    fetch(request)
+      .then(async (response) => {
+        if (response.status >= 500) {
+          return (await caches.match(request)) || response;
+        }
+        if (response.ok) {
+          const copy = response.clone();
+          try {
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put(request, copy);
+          } catch {
+            // A full or unavailable cache must not break the online app.
+          }
+        }
+        return response;
+      })
+      .catch(async () => (await caches.match(request)) || Response.error())
+  );
 });
