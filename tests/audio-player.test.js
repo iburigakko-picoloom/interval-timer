@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createCuePlayer } from '../audio-player.js';
+import { createCuePlayer, createToneWavDataUri } from '../audio-player.js';
 
 function audioParam(initialValue = 0) {
   return {
@@ -81,6 +81,127 @@ function createFakeAudioContext({ initialState = 'running', resume } = {}) {
 
   return { AudioContextClass: FakeAudioContext, instances };
 }
+
+function createFakeAudio({ play } = {}) {
+  const instances = [];
+
+  class FakeAudio {
+    constructor() {
+      this.src = '';
+      this.volume = 1;
+      this.muted = false;
+      this.currentTime = 0;
+      this.style = {};
+      this.attributes = new Map();
+      this.pauseCalls = 0;
+      this.playCalls = 0;
+      instances.push(this);
+    }
+
+    setAttribute(name, value) {
+      this.attributes.set(name, value);
+    }
+
+    pause() {
+      this.pauseCalls += 1;
+    }
+
+    play() {
+      this.playCalls += 1;
+      return play ? play(this) : Promise.resolve();
+    }
+  }
+
+  return { AudioClass: FakeAudio, instances };
+}
+
+const encodeBase64 = (value) => Buffer.from(value, 'binary').toString('base64');
+
+test('generated media tones are valid mono PCM WAV data', () => {
+  const uri = createToneWavDataUri({ freq: 988, duration: 0.4 }, encodeBase64);
+  assert.match(uri, /^data:audio\/wav;base64,/);
+
+  const bytes = Buffer.from(uri.split(',')[1], 'base64');
+  assert.equal(bytes.subarray(0, 4).toString('ascii'), 'RIFF');
+  assert.equal(bytes.subarray(8, 12).toString('ascii'), 'WAVE');
+  assert.equal(bytes.readUInt16LE(22), 1);
+  assert.equal(bytes.readUInt32LE(24), 16000);
+  assert.equal(bytes.readUInt16LE(34), 16);
+  assert.ok(bytes.length > 44);
+});
+
+test('HTML media playback is started synchronously and preferred for audible output', async () => {
+  let finishPlayback;
+  const media = createFakeAudio({
+    play() {
+      return new Promise((resolve) => {
+        finishPlayback = resolve;
+      });
+    }
+  });
+  const webAudio = createFakeAudioContext();
+  const mounted = [];
+  const player = createCuePlayer({
+    AudioClass: media.AudioClass,
+    AudioContextClass: webAudio.AudioContextClass,
+    mediaParent: { append: (element) => mounted.push(element) },
+    base64Encode: encodeBase64
+  });
+
+  const playback = player.play('preview');
+  assert.equal(media.instances.length, 1);
+  assert.equal(media.instances[0].playCalls, 1);
+  assert.match(media.instances[0].src, /^data:audio\/wav;base64,/);
+  assert.deepEqual(mounted, [media.instances[0]]);
+  assert.equal(webAudio.instances.length, 1);
+  assert.equal(webAudio.instances[0].oscillators.length, 0);
+
+  finishPlayback();
+  assert.equal(await playback, true);
+  assert.equal(webAudio.instances[0].oscillators.length, 0);
+});
+
+test('the same permitted media element is reused for later timer cues', async () => {
+  const media = createFakeAudio();
+  const player = createCuePlayer({
+    AudioClass: media.AudioClass,
+    base64Encode: encodeBase64
+  });
+
+  assert.equal(await player.play('ready'), true);
+  assert.equal(await player.play('countdown'), true);
+  assert.equal(media.instances.length, 1);
+  assert.equal(media.instances[0].playCalls, 2);
+  assert.equal(media.instances[0].pauseCalls, 2);
+});
+
+test('a rejected media start falls back to resumed Web Audio', async () => {
+  const media = createFakeAudio({ play: () => Promise.reject(new Error('blocked')) });
+  const webAudio = createFakeAudioContext({ initialState: 'suspended' });
+  const player = createCuePlayer({
+    AudioClass: media.AudioClass,
+    AudioContextClass: webAudio.AudioContextClass,
+    base64Encode: encodeBase64
+  });
+
+  assert.equal(await player.play('work'), true);
+  assert.equal(media.instances[0].playCalls, 1);
+  assert.equal(webAudio.instances.length, 1);
+  assert.equal(webAudio.instances[0].resumeCalls, 1);
+  assert.equal(webAudio.instances[0].oscillators.length, 1);
+});
+
+test('volume changes update the reusable media element', async () => {
+  const media = createFakeAudio();
+  const player = createCuePlayer({
+    AudioClass: media.AudioClass,
+    base64Encode: encodeBase64
+  });
+  assert.equal(await player.play('preview'), true);
+
+  player.setVolume(40);
+  assert.equal(media.instances[0].volume, 0.4);
+});
 
 test('a suspended context is running before a cue is scheduled', async () => {
   let finishResume;

@@ -57,6 +57,12 @@ test('application logic is externalized and unsafe HTML rendering is absent', ()
   assert.doesNotMatch(app, /\balert\s*\(/);
 });
 
+test('notification sound uses HTML media with a Web Audio fallback', () => {
+  assert.match(app, /AudioClass:\s*window\.Audio/);
+  assert.match(app, /AudioContextClass:\s*window\.AudioContext\s*\|\|\s*window\.webkitAudioContext/);
+  assert.match(app, /mediaParent:\s*document\.body/);
+});
+
 test('timer recovery uses a sleep-aware wall clock and single-tab ownership', () => {
   assert.doesNotMatch(app, /performance\.now\(\)/);
   assert.match(app, /ownerId:\s*TIMER_OWNER_ID/);
