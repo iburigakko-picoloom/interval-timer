@@ -34,15 +34,18 @@ test('the deployed app shell uses one matching cache-busting version', () => {
   const appVersion = index.match(/app\.js\?v=(\d+)/)?.[1];
   const coreVersion = app.match(/app-core\.js\?v=(\d+)/)?.[1];
   const lockVersion = app.match(/storage-lock\.js\?v=(\d+)/)?.[1];
+  const audioVersion = app.match(/audio-player\.js\?v=(\d+)/)?.[1];
 
   assert.ok(styleVersion);
   assert.equal(appVersion, styleVersion);
   assert.equal(coreVersion, styleVersion);
   assert.equal(lockVersion, styleVersion);
+  assert.equal(audioVersion, styleVersion);
   assert.match(worker, new RegExp(`styles\\.css\\?v=${styleVersion}`));
   assert.match(worker, new RegExp(`app\\.js\\?v=${styleVersion}`));
   assert.match(worker, new RegExp(`app-core\\.js\\?v=${styleVersion}`));
   assert.match(worker, new RegExp(`storage-lock\\.js\\?v=${styleVersion}`));
+  assert.match(worker, new RegExp(`audio-player\\.js\\?v=${styleVersion}`));
 });
 
 test('application logic is externalized and unsafe HTML rendering is absent', () => {

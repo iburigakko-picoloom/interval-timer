@@ -13,8 +13,9 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=33';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=33';
+} from './app-core.js?v=34';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=34';
+import { createCuePlayer } from './audio-player.js?v=34';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
@@ -51,7 +52,10 @@ const state = {
   timer: emptyTimer()
 };
 
-let audioEngine = null;
+const cuePlayer = createCuePlayer({
+  AudioContextClass: window.AudioContext || window.webkitAudioContext,
+  initialVolume: state.soundVolume
+});
 let screenWakeLock = null;
 let wakeLockRequest = null;
 let noticeTimer = null;
@@ -167,7 +171,7 @@ function bindEvents() {
   $('skip').addEventListener('click', skipStep);
   $('stop').addEventListener('click', () => void stop(false));
   el.soundVolume.addEventListener('input', updateSoundVolume);
-  el.soundTest.addEventListener('click', testSound);
+  el.soundTest.addEventListener('click', () => void testSound());
 
   document.addEventListener('visibilitychange', handleVisibilityChange);
   window.addEventListener('popstate', () => void handlePopState());
@@ -1065,7 +1069,11 @@ function start(blocks, title) {
     lastTickAt: Date.now()
   };
 
-  playCue('ready');
+  void playCue('ready').then((played) => {
+    if (!played && state.soundVolume > 0 && state.timer.active) {
+      showNotice('通知音を有効にできません。ホームの「音を試す」で確認してください', 'error');
+    }
+  });
   persistTimer();
   show('run');
   drawRun();
@@ -1106,7 +1114,7 @@ function tick() {
 
   const second = Math.ceil(timer.remaining);
   if (second <= 3 && second >= 1 && timer.beeped !== second) {
-    playCue('countdown');
+    void playCue('countdown');
     timer.beeped = second;
   }
 
@@ -1151,7 +1159,7 @@ function pauseToggle() {
   if (!timer.active) return;
 
   if (timer.paused) {
-    ensureAudioEngine();
+    void cuePlayer.unlock();
     timer.paused = false;
     timer.lastTickAt = Date.now();
     requestWakeLock();
@@ -1195,7 +1203,7 @@ async function stop(done) {
 }
 
 function completeTimer() {
-  playCue('complete');
+  void playCue('complete');
   finishTimerSession();
   show('home', { history: 'replace' });
   showNotice('メニューが完了しました');
@@ -1380,13 +1388,7 @@ function updateSoundVolume() {
   }
 
   updateSoundUI();
-  if (audioEngine) {
-    audioEngine.master.gain.setTargetAtTime(
-      state.soundVolume / 100,
-      audioEngine.ctx.currentTime,
-      .01
-    );
-  }
+  cuePlayer.setVolume(state.soundVolume);
 }
 
 function updateSoundUI() {
@@ -1397,106 +1399,29 @@ function updateSoundUI() {
     : '短い単音です。端末のメディア音量にも連動します。';
 }
 
-function testSound() {
-  const played = playCue('preview');
+async function testSound() {
+  const played = await playCue('preview');
   if (!played) {
     showNotice(
       state.soundVolume === 0
         ? '通知音はミュートされています'
-        : 'この端末では通知音を再生できません',
+        : '通知音を再生できません。端末のメディア音量を確認してください',
       'error'
     );
-  }
-}
-
-function ensureAudioEngine() {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return null;
-
-  if (!audioEngine) {
-    let ctx;
-    try {
-      try {
-        ctx = new AudioContext({ latencyHint: 'interactive' });
-      } catch {
-        ctx = new AudioContext();
-      }
-
-      const compressor = ctx.createDynamicsCompressor();
-      const master = ctx.createGain();
-      compressor.threshold.value = -3;
-      compressor.knee.value = 0;
-      compressor.ratio.value = 20;
-      compressor.attack.value = .001;
-      compressor.release.value = .08;
-      master.gain.value = state.soundVolume / 100;
-      compressor.connect(master);
-      master.connect(ctx.destination);
-      audioEngine = { ctx, compressor, master };
-    } catch {
-      try {
-        const closing = ctx?.close?.();
-        closing?.catch?.(() => {});
-      } catch {
-        // Audio is optional; timer controls must keep working when cleanup fails.
-      }
-      return null;
-    }
+    return;
   }
 
-  if (audioEngine.ctx.state === 'suspended') {
-    try {
-      audioEngine.ctx.resume().catch(() => {});
-    } catch {
-      return null;
-    }
-  }
-  return audioEngine;
+  showNotice('通知音を再生しました');
 }
 
 function playCue(kind) {
-  if (state.soundVolume === 0) return false;
-  const engine = ensureAudioEngine();
-  if (!engine) return false;
-
-  const cues = {
-    ready: { freq: 988, duration: .32 },
-    preview: { freq: 988, duration: .32 },
-    countdown: { freq: 988, duration: .22 },
-    work: { freq: 988, duration: .32 },
-    rest: { freq: 784, duration: .24 },
-    complete: { freq: 988, duration: .48 }
-  };
-  try {
-    scheduleTone(engine, cues[kind] || cues.countdown);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function scheduleTone(engine, tone) {
-  const { ctx, compressor } = engine;
-  const startAt = ctx.currentTime;
-  const endAt = startAt + tone.duration;
-  const oscillator = ctx.createOscillator();
-  const gain = ctx.createGain();
-  oscillator.type = 'sine';
-  oscillator.frequency.value = tone.freq;
-  gain.gain.setValueAtTime(.0001, startAt);
-  gain.gain.exponentialRampToValueAtTime(.85, startAt + .006);
-  gain.gain.setValueAtTime(.85, Math.max(startAt + .007, endAt - .04));
-  gain.gain.exponentialRampToValueAtTime(.0001, endAt);
-  oscillator.connect(gain);
-  gain.connect(compressor);
-  oscillator.start(startAt);
-  oscillator.stop(endAt + .03);
+  return cuePlayer.play(kind);
 }
 
 function playCurrentPhaseCue() {
   const phase = state.timer.steps[state.timer.index]?.phase;
-  if (phase === 'WORK') playCue('work');
-  if (phase === 'REST') playCue('rest');
+  if (phase === 'WORK') void playCue('work');
+  if (phase === 'REST') void playCue('rest');
 }
 
 async function requestWakeLock() {
