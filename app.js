@@ -13,9 +13,9 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=34';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=34';
-import { createCuePlayer } from './audio-player.js?v=34';
+} from './app-core.js?v=35';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=35';
+import { createCuePlayer } from './audio-player.js?v=35';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
@@ -53,7 +53,10 @@ const state = {
 };
 
 const cuePlayer = createCuePlayer({
+  AudioClass: window.Audio,
   AudioContextClass: window.AudioContext || window.webkitAudioContext,
+  mediaParent: document.body,
+  base64Encode: window.btoa?.bind(window),
   initialVolume: state.soundVolume
 });
 let screenWakeLock = null;

@@ -1,13 +1,13 @@
 const CACHE_PREFIX = 'interval-timer-pwa-';
-const CACHE_NAME = `${CACHE_PREFIX}v34`;
+const CACHE_NAME = `${CACHE_PREFIX}v35`;
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=34',
-  './app.js?v=34',
-  './app-core.js?v=34',
-  './storage-lock.js?v=34',
-  './audio-player.js?v=34',
+  './styles.css?v=35',
+  './app.js?v=35',
+  './app-core.js?v=35',
+  './storage-lock.js?v=35',
+  './audio-player.js?v=35',
   './manifest.json',
   './icons/timer-192.png',
   './icons/timer-512.png'
