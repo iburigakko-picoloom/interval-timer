@@ -59,6 +59,7 @@ test('application logic is externalized and unsafe HTML rendering is absent', ()
 
 test('notification sound uses HTML media with a Web Audio fallback', () => {
   assert.match(app, /AudioClass:\s*window\.Audio/);
+  assert.match(app, /cuePlayer\.prepare\('ready'\)/);
   assert.match(app, /AudioContextClass:\s*window\.AudioContext\s*\|\|\s*window\.webkitAudioContext/);
   assert.match(app, /mediaParent:\s*document\.body/);
 });
