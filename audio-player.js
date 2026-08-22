@@ -80,7 +80,8 @@ export function createCuePlayer({
   AudioContextClass,
   mediaParent = null,
   base64Encode = defaultBase64Encode,
-  initialVolume = 100
+  initialVolume = 100,
+  preferWebAudio = false
 } = {}) {
   let engine = null;
   let media = null;
@@ -246,8 +247,13 @@ export function createCuePlayer({
     if (volume === 0) return false;
     const tone = CUE_TONES[kind] || CUE_TONES.countdown;
 
-    const mediaPlayback = playMediaTone(tone);
     const pendingEngine = unlockWebAudio();
+    if (preferWebAudio) {
+      if (await playWebAudioTone(tone, pendingEngine)) return true;
+      return playMediaTone(tone);
+    }
+
+    const mediaPlayback = playMediaTone(tone);
     if (await mediaPlayback) return true;
     return playWebAudioTone(tone, pendingEngine);
   }

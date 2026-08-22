@@ -62,6 +62,7 @@ test('notification sound uses HTML media with a Web Audio fallback', () => {
   assert.match(app, /cuePlayer\.prepare\('ready'\)/);
   assert.match(app, /AudioContextClass:\s*window\.AudioContext\s*\|\|\s*window\.webkitAudioContext/);
   assert.match(app, /mediaParent:\s*document\.body/);
+  assert.match(app, /preferWebAudio:\s*\/Android\/i\.test\(navigator\.userAgent\)/);
 });
 
 test('timer recovery uses a sleep-aware wall clock and single-tab ownership', () => {

@@ -241,7 +241,13 @@ test('a suspended context is running before a cue is scheduled', async () => {
       });
     }
   });
-  const player = createCuePlayer({ AudioContextClass: fake.AudioContextClass });
+  const media = createFakeAudio();
+  const player = createCuePlayer({
+    AudioClass: media.AudioClass,
+    AudioContextClass: fake.AudioContextClass,
+    base64Encode: encodeBase64,
+    preferWebAudio: true
+  });
 
   const playback = player.play('preview');
   assert.equal(fake.instances.length, 1);
@@ -252,6 +258,7 @@ test('a suspended context is running before a cue is scheduled', async () => {
   assert.equal(fake.instances[0].resumeCalls, 1);
   assert.equal(fake.instances[0].oscillators.length, 1);
   assert.equal(fake.instances[0].oscillators[0].frequency.value, 1320);
+  assert.equal(media.instances.length, 0);
 });
 
 test('a rejected resume reports failure and never schedules silent audio', async () => {
