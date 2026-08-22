@@ -1,13 +1,13 @@
 export const CUE_TONES = Object.freeze({
-  ready: Object.freeze({ freq: 988, duration: 0.4 }),
-  preview: Object.freeze({ freq: 988, duration: 0.4 }),
-  countdown: Object.freeze({ freq: 988, duration: 0.26 }),
-  work: Object.freeze({ freq: 988, duration: 0.4 }),
-  rest: Object.freeze({ freq: 784, duration: 0.3 }),
-  complete: Object.freeze({ freq: 988, duration: 0.56 })
+  ready: Object.freeze({ freq: 1320, duration: 0.5 }),
+  preview: Object.freeze({ freq: 1320, duration: 0.5 }),
+  countdown: Object.freeze({ freq: 1320, duration: 0.32 }),
+  work: Object.freeze({ freq: 1320, duration: 0.5 }),
+  rest: Object.freeze({ freq: 1047, duration: 0.4 }),
+  complete: Object.freeze({ freq: 1568, duration: 0.68 })
 });
 
-const SAMPLE_RATE = 16000;
+const SAMPLE_RATE = 44100;
 const WAV_HEADER_SIZE = 44;
 
 function boundedVolume(value) {
@@ -95,8 +95,12 @@ export function createCuePlayer({
       element.preload = 'auto';
       element.controls = false;
       element.playsInline = true;
+      element.defaultMuted = false;
+      element.muted = false;
       element.volume = volume / 100;
       element.setAttribute?.('aria-hidden', 'true');
+      element.setAttribute?.('playsinline', '');
+      element.setAttribute?.('webkit-playsinline', '');
       if (element.style) {
         element.style.position = 'fixed';
         element.style.left = '-9999px';
@@ -127,8 +131,16 @@ export function createCuePlayer({
 
     try {
       media.pause?.();
-      media.src = source;
-      media.currentTime = 0;
+      if (media.src !== source) {
+        media.src = source;
+        media.load?.();
+      }
+      try {
+        media.currentTime = 0;
+      } catch {
+        // Some mobile browsers do not allow seeking until metadata is available.
+      }
+      media.defaultMuted = false;
       media.muted = false;
       media.volume = volume / 100;
       const started = media.play();
@@ -248,6 +260,25 @@ export function createCuePlayer({
     return Boolean(await pendingEngine);
   }
 
+  function prepare(kind = 'ready') {
+    if (!media) media = createMediaElement();
+    if (!media) return false;
+
+    const tone = CUE_TONES[kind] || CUE_TONES.ready;
+    const source = sourceForTone(tone);
+    if (!source) return false;
+
+    try {
+      if (media.src !== source) {
+        media.src = source;
+        media.load?.();
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function setVolume(value) {
     volume = boundedVolume(value);
     if (media) media.volume = volume / 100;
@@ -261,5 +292,5 @@ export function createCuePlayer({
     }
   }
 
-  return Object.freeze({ play, setVolume, unlock });
+  return Object.freeze({ play, setVolume, unlock, prepare });
 }

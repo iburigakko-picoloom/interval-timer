@@ -95,6 +95,7 @@ function createFakeAudio({ play } = {}) {
       this.attributes = new Map();
       this.pauseCalls = 0;
       this.playCalls = 0;
+      this.loadCalls = 0;
       instances.push(this);
     }
 
@@ -104,6 +105,10 @@ function createFakeAudio({ play } = {}) {
 
     pause() {
       this.pauseCalls += 1;
+    }
+
+    load() {
+      this.loadCalls += 1;
     }
 
     play() {
@@ -125,9 +130,28 @@ test('generated media tones are valid mono PCM WAV data', () => {
   assert.equal(bytes.subarray(0, 4).toString('ascii'), 'RIFF');
   assert.equal(bytes.subarray(8, 12).toString('ascii'), 'WAVE');
   assert.equal(bytes.readUInt16LE(22), 1);
-  assert.equal(bytes.readUInt32LE(24), 16000);
+  assert.equal(bytes.readUInt32LE(24), 44100);
   assert.equal(bytes.readUInt16LE(34), 16);
   assert.ok(bytes.length > 44);
+});
+
+test('prepare mounts and preloads mobile media without starting playback', () => {
+  const media = createFakeAudio();
+  const mounted = [];
+  const player = createCuePlayer({
+    AudioClass: media.AudioClass,
+    mediaParent: { append: (element) => mounted.push(element) },
+    base64Encode: encodeBase64
+  });
+
+  assert.equal(player.prepare('ready'), true);
+  assert.equal(media.instances.length, 1);
+  assert.deepEqual(mounted, [media.instances[0]]);
+  assert.equal(media.instances[0].loadCalls, 1);
+  assert.equal(media.instances[0].playCalls, 0);
+  assert.equal(media.instances[0].muted, false);
+  assert.equal(media.instances[0].attributes.has('playsinline'), true);
+  assert.equal(media.instances[0].attributes.has('webkit-playsinline'), true);
 });
 
 test('HTML media playback is started synchronously and preferred for audible output', async () => {
@@ -173,6 +197,7 @@ test('the same permitted media element is reused for later timer cues', async ()
   assert.equal(media.instances.length, 1);
   assert.equal(media.instances[0].playCalls, 2);
   assert.equal(media.instances[0].pauseCalls, 2);
+  assert.equal(media.instances[0].loadCalls, 2);
 });
 
 test('a rejected media start falls back to resumed Web Audio', async () => {
@@ -226,7 +251,7 @@ test('a suspended context is running before a cue is scheduled', async () => {
   assert.equal(await playback, true);
   assert.equal(fake.instances[0].resumeCalls, 1);
   assert.equal(fake.instances[0].oscillators.length, 1);
-  assert.equal(fake.instances[0].oscillators[0].frequency.value, 988);
+  assert.equal(fake.instances[0].oscillators[0].frequency.value, 1320);
 });
 
 test('a rejected resume reports failure and never schedules silent audio', async () => {
