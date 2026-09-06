@@ -13,9 +13,9 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=39';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=39';
-import { createCuePlayer } from './audio-player.js?v=39';
+} from './app-core.js?v=40';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=40';
+import { createCuePlayer } from './audio-player.js?v=40';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);

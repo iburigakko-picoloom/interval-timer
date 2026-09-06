@@ -257,7 +257,7 @@ test('a suspended context is running before a cue is scheduled', async () => {
   assert.equal(await playback, true);
   assert.equal(fake.instances[0].resumeCalls, 1);
   assert.equal(fake.instances[0].oscillators.length, 1);
-  assert.equal(fake.instances[0].oscillators[0].frequency.value, 1320);
+  assert.equal(fake.instances[0].oscillators[0].frequency.value, 1760);
   assert.equal(media.instances.length, 0);
 });
 
