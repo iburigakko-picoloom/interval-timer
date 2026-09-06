@@ -13,9 +13,9 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=37';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=37';
-import { createCuePlayer } from './audio-player.js?v=37';
+} from './app-core.js?v=38';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=38';
+import { createCuePlayer } from './audio-player.js?v=38';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
@@ -158,6 +158,17 @@ function bindEvents() {
     quickStart();
   });
   $('quickSave').addEventListener('click', () => void quickSave());
+  document.querySelectorAll('[data-preset]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const [work, rest, repeat] = button.dataset.preset.split(',');
+      el.quickWork.value = work;
+      el.quickRest.value = rest;
+      el.quickRepeat.value = repeat;
+      updateQuickSummary();
+    });
+  });
+  el.quickForm.addEventListener('input', updateQuickSummary);
+  updateQuickSummary();
   el.menuForm.addEventListener('submit', (event) => {
     event.preventDefault();
     void saveMenu();
@@ -182,6 +193,16 @@ function bindEvents() {
   window.addEventListener('popstate', () => void handlePopState());
   window.addEventListener('storage', handleStorageSync);
   window.addEventListener('beforeunload', handleBeforeUnload);
+}
+
+function updateQuickSummary() {
+  const inputs = [el.quickWork, el.quickRest, el.quickRepeat];
+  const valid = inputs.every((input) => input.validity.valid && input.value !== '');
+  const [work, rest, repeat] = inputs.map((input) => Number(input.value));
+  $('quickTotal').textContent = valid ? `合計 ${fmt((work + rest) * repeat)}（準備時間を除く）` : '時間と回数を入力';
+  document.querySelectorAll('[data-preset]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(valid && button.dataset.preset === `${work},${rest},${repeat}`));
+  });
 }
 
 function registerServiceWorker() {
