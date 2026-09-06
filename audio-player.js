@@ -1,10 +1,10 @@
 export const CUE_TONES = Object.freeze({
-  ready: Object.freeze({ freq: 1320, duration: 0.5 }),
-  preview: Object.freeze({ freq: 1320, duration: 0.5 }),
+  ready: Object.freeze({ freq: 1760, duration: 0.5 }),
+  preview: Object.freeze({ freq: 1760, duration: 0.5 }),
   countdown: Object.freeze({ freq: 1320, duration: 0.32 }),
-  work: Object.freeze({ freq: 1320, duration: 0.5 }),
-  rest: Object.freeze({ freq: 1047, duration: 0.4 }),
-  complete: Object.freeze({ freq: 1568, duration: 0.68 })
+  work: Object.freeze({ freq: 1760, duration: 0.5 }),
+  rest: Object.freeze({ freq: 1760, duration: 0.4 }),
+  complete: Object.freeze({ freq: 1760, duration: 0.68 })
 });
 
 const SAMPLE_RATE = 44100;
