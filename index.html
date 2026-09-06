@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#f5f5f5" />
+  <meta name="theme-color" content="#f3f4ee" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>インターバルタイマー</title>
-  <link rel="stylesheet" href="./styles.css?v=37" />
+  <link rel="stylesheet" href="./styles.css?v=38" />
   <meta name="description" content="スマホで使えるインターバルタイマー" />
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" href="./icons/timer-192.png" type="image/png" />
@@ -28,25 +28,29 @@
     <main>
       <section id="home" class="view active">
         <div class="mock-phone-card">
-          <button class="big-start" data-view="quick">クイック開始</button>
+          <div class="home-intro"><p>自分のペースで、ひと区切り。</p></div>
+          <button class="big-start" data-view="quick" aria-label="クイック開始">
+            <span class="start-copy"><small>QUICK TIMER</small><strong>さあ、はじめよう</strong><span>時間を決めて、すぐにスタート</span></span>
+            <span class="play-mark" aria-hidden="true">▶</span>
+          </button>
 
           <div class="home-section">
-            <p class="home-section-title">作成</p>
+            <p class="home-section-title">自分でつくる</p>
             <div class="home-shortcuts" aria-label="作成メニュー">
               <button class="setting-row" data-view="menu">
-                <span class="row-label">メニューを作る</span>
+                <span class="row-label"><span class="menu-symbol" aria-hidden="true">＋</span><span>メニューを作る<small>運動・休憩・回数をひとまとめに</small></span></span>
                 <span class="row-value" aria-hidden="true">›</span>
               </button>
 
               <button id="comboCreateButton" class="setting-row" data-view="combo" aria-label="組み合わせを作る">
-                <span class="row-label">組み合わせを作る</span>
+                <span class="row-label"><span class="menu-symbol" aria-hidden="true">≡</span><span>組み合わせを作る<small>メニューをつないで、自分のコースに</small></span></span>
                 <span id="comboDraftBadge" class="row-value" aria-hidden="true">›</span>
               </button>
             </div>
           </div>
 
           <div class="home-section">
-            <p class="home-section-title">保存済み</p>
+            <p class="home-section-title">いつものメニュー</p>
             <div class="saved-links" aria-label="保存済み">
               <button class="home-saved-button" data-view="savedMenus">
                 <span class="row-label">保存済みメニュー</span>
@@ -83,6 +87,12 @@
           </div>
 
           <form id="quickForm">
+            <p class="section-note">まずは選んで、時間は自由に調整。</p>
+            <div class="preset-list" aria-label="時間のプリセット">
+              <button class="preset" type="button" data-preset="20,10,8" aria-pressed="false">20 / 10<small>4分・8回</small></button>
+              <button class="preset" type="button" data-preset="40,20,8" aria-pressed="true">40 / 20<small>8分・8回</small></button>
+              <button class="preset" type="button" data-preset="60,30,4" aria-pressed="false">60 / 30<small>6分・4回</small></button>
+            </div>
             <div class="form-grid">
               <label>
                 <span>運動（秒）</span>
@@ -105,6 +115,7 @@
               </label>
             </div>
 
+            <div class="quick-summary"><span>（運動 ＋ 休憩）× 回数</span><output id="quickTotal" aria-live="polite">合計 08:00</output></div>
             <div class="actions">
               <button id="quickStart" class="btn primary" type="submit">開始</button>
               <button id="quickSave" class="btn secondary" type="button">保存</button>
@@ -285,6 +296,6 @@
       </div>
     </form>
   </dialog>
-  <script type="module" src="./app.js?v=37"></script>
+  <script type="module" src="./app.js?v=38"></script>
 </body>
 </html>
