@@ -1,14 +1,14 @@
 :root {
   color-scheme: light;
-  --bg: #f3f4ee;
+  --bg: #f5f7fb;
   --panel: #ffffff;
-  --text: #20342e;
-  --muted: #607068;
-  --line: #ccd5ca;
-  --line-soft: #e2e7de;
-  --blue: #245c46;
-  --blue-hover: #194834;
-  --blue-soft: #edf4e8;
+  --text: #172238;
+  --muted: #657084;
+  --line: #d2d9e5;
+  --line-soft: #e5eaf2;
+  --blue: #2457d6;
+  --blue-hover: #1e49b8;
+  --blue-soft: #eef3ff;
   --green: #16713b;
   --green-soft: #edf8f1;
   --orange: #a64b08;
@@ -253,7 +253,7 @@ body.home-screen .topbar {
 
 .big-start {
   width: 100%;
-  min-height: 112px;
+  min-height: 88px;
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -261,15 +261,12 @@ body.home-screen .topbar {
   gap: 12px;
   padding: 18px 20px;
   text-align: left;
-  box-shadow: 0 4px 0 #163f30;
+  box-shadow: 0 4px 0 #193fa0;
 }
 
-.home-intro p { margin: 4px 0 14px; font-size: 13px; color: var(--muted); }
 .start-copy { display: grid; gap: 4px; }
-.start-copy small { color: #d2e8c8; font-size: 10px; letter-spacing: .14em; }
 .start-copy strong { font-size: clamp(23px, 6vw, 28px); letter-spacing: -.03em; }
-.start-copy > span { font-size: 12px; font-weight: 400; color: #e2edde; }
-.play-mark { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; background: #d9edb1; color: #254c39; padding-left: 3px; }
+.play-mark { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; background: white; color: var(--blue); padding-left: 3px; }
 
 .home-section,
 .sound-card {
@@ -338,7 +335,7 @@ body.home-screen .topbar {
 
 .sound-card {
   padding: 10px 12px;
-  background: #eaf0e4;
+  background: var(--blue-soft);
 }
 
 .sound-card-head {
@@ -400,14 +397,13 @@ body.home-screen .topbar {
   gap: 10px;
 }
 
-.section-note { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
 .preset-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
 .preset { min-height: 62px; padding: 8px 3px; border: 1px solid var(--line); border-radius: 12px; color: var(--text); background: white; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .preset small { display: block; font-size: 11px; font-weight: 400; }
-.preset[aria-pressed="true"] { background: #e6efdb; border: 2px solid var(--blue); }
+.preset[aria-pressed="true"] { background: var(--blue-soft); border: 2px solid var(--blue); }
 .quick-summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin-top: 16px; padding: 12px; border-radius: 10px; background: var(--bg); font-size: 12px; color: var(--muted); }
 .quick-summary output { font-weight: 700; color: var(--text); }
-#quick input[type="number"], #menu input[type="number"] { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; background: #fafbf7; }
+#quick input[type="number"], #menu input[type="number"] { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; background: #f8faff; }
 #quick label:has(#quickWork) > span::before, #menu label:has(#menuWork) > span::before { content: '● '; color: var(--green); }
 #quick label:has(#quickRest) > span::before, #menu label:has(#menuRest) > span::before { content: '● '; color: var(--orange); }
 
@@ -1000,7 +996,6 @@ body.run-screen #run .panel {
     padding-block: 7px;
   }
 
-  .home-intro p { margin-bottom: 8px; }
   .start-copy strong { font-size: 23px; }
 
   body.run-screen .ring {
@@ -1040,8 +1035,6 @@ body.run-screen #run .panel {
     padding-block: 8px;
   }
 
-  .home-intro { display: none; }
-  .start-copy small, .start-copy > span { display: none; }
   .play-mark { width: 36px; height: 36px; }
 
   body.home-screen .home-section,
