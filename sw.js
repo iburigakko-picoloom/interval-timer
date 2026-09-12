@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'interval-timer-pwa-';
-const CACHE_NAME = `${CACHE_PREFIX}v42`;
+const CACHE_NAME = `${CACHE_PREFIX}v43`;
 const APP_SHELL = [
   './',
   './index.html',
