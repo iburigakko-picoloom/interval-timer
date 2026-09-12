@@ -7,11 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>インターバルタイマー</title>
-  <link rel="stylesheet" href="./styles.css?v=40" />
+  <link rel="stylesheet" href="./styles.css?v=41" />
   <meta name="description" content="スマホで使えるインターバルタイマー" />
   <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" href="./icons/timer-192.png" type="image/png" />
-  <link rel="apple-touch-icon" href="./icons/timer-192.png" />
+  <link rel="icon" href="./icons/timer.svg?v=41" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/timer-192.png?v=41" />
 </head>
 
 <body class="home-screen">
@@ -30,20 +30,20 @@
         <div class="mock-phone-card">
           <button class="big-start" data-view="quick" aria-label="クイック開始">
             <span class="start-copy"><strong>クイック開始</strong></span>
-            <span class="play-mark" aria-hidden="true">▶</span>
+            <span class="play-mark" data-icon="play" aria-hidden="true"></span>
           </button>
 
           <div class="home-section">
             <p class="home-section-title">作成</p>
             <div class="home-shortcuts" aria-label="作成メニュー">
               <button class="setting-row" data-view="menu">
-                <span class="row-label"><span class="menu-symbol" aria-hidden="true">＋</span><span>メニューを作る</span></span>
-                <span class="row-value" aria-hidden="true">›</span>
+                <span class="row-label"><span class="menu-symbol" data-icon="plus" aria-hidden="true"></span><span>メニューを作る</span></span>
+                <span class="row-value" data-icon="chevron" aria-hidden="true"></span>
               </button>
 
               <button id="comboCreateButton" class="setting-row" data-view="combo" aria-label="組み合わせを作る">
-                <span class="row-label"><span class="menu-symbol" aria-hidden="true">≡</span><span>組み合わせを作る</span></span>
-                <span id="comboDraftBadge" class="row-value" aria-hidden="true">›</span>
+                <span class="row-label"><span class="menu-symbol" data-icon="list" aria-hidden="true"></span><span>組み合わせを作る</span></span>
+                <span id="comboDraftBadge" class="row-value" aria-hidden="true"></span>
               </button>
             </div>
           </div>
@@ -210,7 +210,7 @@
             <button id="savedMenuEditToggle" class="small saved-menu-edit-toggle" type="button">編集</button>
           </div>
 
-          <p id="savedMenuEditHint" class="saved-menu-edit-hint hidden">ハンドルを長押しして上下に動かします。キーボードでは上下矢印を使えます。削除も編集中だけ表示されます。</p>
+          <p id="savedMenuEditHint" class="saved-menu-edit-hint hidden">長押しで並び替え。上下矢印キーでも移動できます。</p>
 
           <div class="page-head-actions">
             <button class="btn primary" data-view="menu">メニューを作成</button>
@@ -241,7 +241,7 @@
         <div class="panel">
           <div class="run-head">
             <div>
-              <p class="eyebrow">実行中</p>
+              <p id="runPosition" class="eyebrow">メニュー 1 / 1</p>
               <h2 id="runTitle">インターバル</h2>
               <p id="wakeStatus" class="wake-status" data-state="idle" role="status">スリープ防止を準備中</p>
             </div>
@@ -294,6 +294,6 @@
       </div>
     </form>
   </dialog>
-  <script type="module" src="./app.js?v=40"></script>
+  <script type="module" src="./app.js?v=41"></script>
 </body>
 </html>

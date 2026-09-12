@@ -13,9 +13,12 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=40';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=40';
-import { createCuePlayer } from './audio-player.js?v=40';
+} from './app-core.js?v=41';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=41';
+import { createCuePlayer } from './audio-player.js?v=41';
+import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=41';
+import { icon, labelButton } from './ui-icons.js?v=41';
+import { sortable } from './sortable.js?v=41';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
@@ -135,6 +138,24 @@ const el = {
   wakeStatus: $('wakeStatus')
 };
 
+for (const [input, name] of [[el.quickWork, '運動'], [el.quickRest, '休憩'], [el.menuWork, '運動'], [el.menuRest, '休憩']]) enhanceDuration(input, name, LIMITS.MAX_SECONDS);
+document.querySelectorAll('[data-icon]').forEach(node => node.replaceChildren(icon(node.dataset.icon)));
+for (const [id, name] of [['homeBtn', 'home'], ['quickStart', 'play'], ['quickSave', 'save'], ['soundTest', 'sound'], ['skip', 'skip'], ['stop', 'stop']]) {
+  const button = $(id); labelButton(button, button.textContent, name);
+}
+sortable(el.savedMenuPageList, async ids => {
+  const byId = new Map(state.blocks.map(block => [block.id, block]));
+  if (ids.length !== state.blocks.length || new Set(ids).size !== ids.length || ids.some(id => !byId.has(id))) { render(); return; }
+  await commitCollections(ids.map(id => byId.get(id)), state.combos);
+  render();
+});
+sortable(el.builderList, ids => {
+  const byId = new Map(state.builder.map(block => [block.id, block]));
+  if (ids.length === state.builder.length && new Set(ids).size === ids.length && ids.every(id => byId.has(id))) {
+    state.builder = ids.map(id => byId.get(id)); persistComboDraft();
+  }
+  renderBuilder(); updateComboTotal();
+});
 bindEvents();
 registerServiceWorker();
 restoreComboDraft();
@@ -161,8 +182,8 @@ function bindEvents() {
   document.querySelectorAll('[data-preset]').forEach((button) => {
     button.addEventListener('click', () => {
       const [work, rest, repeat] = button.dataset.preset.split(',');
-      el.quickWork.value = work;
-      el.quickRest.value = rest;
+      setDuration(el.quickWork, Number(work));
+      setDuration(el.quickRest, Number(rest));
       el.quickRepeat.value = repeat;
       updateQuickSummary();
     });
@@ -197,8 +218,8 @@ function bindEvents() {
 
 function updateQuickSummary() {
   const inputs = [el.quickWork, el.quickRest, el.quickRepeat];
-  const valid = inputs.every((input) => input.validity.valid && input.value !== '');
-  const [work, rest, repeat] = inputs.map((input) => Number(input.value));
+  const valid = [...el.quickForm.querySelectorAll('input')].every(input => input.validity.valid);
+  const [work, rest, repeat] = inputs.map(readPositiveInteger);
   $('quickTotal').textContent = valid ? `合計 ${fmt((work + rest) * repeat)}（準備時間を除く）` : '時間と回数を入力';
   document.querySelectorAll('[data-preset]').forEach((button) => {
     button.setAttribute('aria-pressed', String(valid && button.dataset.preset === `${work},${rest},${repeat}`));
@@ -334,7 +355,7 @@ function validateForm(form) {
 }
 
 function readPositiveInteger(input) {
-  return Number.parseInt(input.value, 10);
+  return input.closest('.duration-input') ? durationSeconds(input) : Number.parseInt(input.value, 10);
 }
 
 function normalizedName(value) {
@@ -432,8 +453,8 @@ function editBlock(id) {
 
   state.editingBlockId = id;
   el.menuName.value = block.name;
-  el.menuWork.value = block.work;
-  el.menuRest.value = block.rest;
+  setDuration(el.menuWork, block.work);
+  setDuration(el.menuRest, block.rest);
   el.menuRepeat.value = block.repeat;
   updateMenuEditUI();
   show('menu');
@@ -441,8 +462,8 @@ function editBlock(id) {
 
 function clearMenuForm() {
   el.menuForm.reset();
-  el.menuWork.value = 30;
-  el.menuRest.value = 15;
+  setDuration(el.menuWork, 30);
+  setDuration(el.menuRest, 15);
   el.menuRepeat.value = 4;
 }
 
@@ -527,7 +548,7 @@ function savedMenuCard(block) {
 
   const item = card(
     block.name,
-    [`${block.work}秒 運動`, `${block.rest}秒 休憩`, `${block.repeat}回`],
+    [`${durationLabel(block.work)} 運動`, `${durationLabel(block.rest)} 休憩`, `${block.repeat}回`],
     buttons
   );
   item.classList.add('saved-menu-card', editing ? 'editing' : 'normal');
@@ -536,131 +557,25 @@ function savedMenuCard(block) {
 
   item.classList.add('saved-menu-sortable');
   item.dataset.menuId = block.id;
-  const handle = document.createElement('button');
-  handle.type = 'button';
-  handle.className = 'reorder-handle';
-  handle.textContent = '長押しして移動';
-  handle.setAttribute('aria-label', `${block.name}を並び替え。上下矢印キーも使えます`);
-  item.prepend(handle);
-  attachSavedMenuReorder(item, handle, block.id);
+  item.dataset.sortId = block.id;
+  item.prepend(reorderHandle(block.name));
   return item;
 }
 
-async function moveSavedMenu(index, direction) {
-  const nextIndex = index + direction;
-  if (nextIndex < 0 || nextIndex >= state.blocks.length) return;
-
-  const nextBlocks = [...state.blocks];
-  [nextBlocks[index], nextBlocks[nextIndex]] = [nextBlocks[nextIndex], nextBlocks[index]];
-  const moved = nextBlocks[nextIndex];
-  if (!await commitCollections(nextBlocks, state.combos)) return;
-
-  render();
-  showNotice(`${moved.name}を${nextIndex + 1}番目に移動しました`);
-  requestAnimationFrame(() => {
-    const handle = el.savedMenuPageList.querySelector(`[data-menu-id="${CSS.escape(moved.id)}"] .reorder-handle`);
-    handle?.focus();
-  });
-}
-
-function attachSavedMenuReorder(item, handle, menuId) {
-  let pressTimer = null;
-  let pointerId = null;
-  let startX = 0;
-  let startY = 0;
-  let sorting = false;
-
-  const clearPressTimer = () => {
-    clearTimeout(pressTimer);
-    pressTimer = null;
-  };
-
-  const finishSort = () => {
-    clearPressTimer();
-    const wasSorting = sorting;
-    sorting = false;
-
-    if (pointerId !== null && handle.hasPointerCapture?.(pointerId)) {
-      handle.releasePointerCapture(pointerId);
-    }
-    pointerId = null;
-    if (!wasSorting) return;
-
-    item.classList.remove('is-dragging');
-    void persistSavedMenuOrder();
-  };
-
-  handle.addEventListener('click', (event) => event.preventDefault());
-  handle.addEventListener('keydown', (event) => {
-    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
-    event.preventDefault();
-    const index = state.blocks.findIndex((block) => block.id === menuId);
-    void moveSavedMenu(index, event.key === 'ArrowUp' ? -1 : 1);
-  });
-
-  handle.addEventListener('pointerdown', (event) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    pointerId = event.pointerId;
-    startX = event.clientX;
-    startY = event.clientY;
-    handle.setPointerCapture?.(pointerId);
-    pressTimer = setTimeout(() => {
-      sorting = true;
-      item.classList.add('is-dragging');
-      handle.textContent = '上下に動かしてください';
-    }, 450);
-  });
-
-  handle.addEventListener('pointermove', (event) => {
-    if (!sorting) {
-      if (Math.hypot(event.clientX - startX, event.clientY - startY) > 10) clearPressTimer();
-      return;
-    }
-
-    event.preventDefault();
-    if (event.clientY < 72) window.scrollBy(0, -8);
-    if (event.clientY > window.innerHeight - 72) window.scrollBy(0, 8);
-
-    const target = document
-      .elementFromPoint(event.clientX, event.clientY)
-      ?.closest('#savedMenuPageList .saved-menu-sortable');
-    if (!target || target === item) return;
-
-    const rect = target.getBoundingClientRect();
-    const insertBefore = event.clientY < rect.top + rect.height / 2;
-    el.savedMenuPageList.insertBefore(item, insertBefore ? target : target.nextSibling);
-  });
-
-  handle.addEventListener('pointerup', finishSort);
-  handle.addEventListener('pointercancel', finishSort);
-  handle.addEventListener('lostpointercapture', finishSort);
-}
-
-async function persistSavedMenuOrder() {
-  const ids = [...el.savedMenuPageList.querySelectorAll('.saved-menu-sortable')]
-    .map((item) => item.dataset.menuId);
-  if (ids.length !== state.blocks.length || new Set(ids).size !== ids.length) {
-    renderSavedMenuPage();
-    showNotice('並び順を保存できませんでした', 'error');
-    return;
-  }
-
-  const blocksById = new Map(state.blocks.map((block) => [block.id, block]));
-  const nextBlocks = ids.map((id) => blocksById.get(id)).filter(Boolean);
-  if (!await commitCollections(nextBlocks, state.combos)) {
-    render();
-    return;
-  }
-
-  render();
-  showNotice('並び順を保存しました');
+function reorderHandle(name) {
+  const handle = document.createElement('button');
+  handle.type = 'button';
+  handle.className = 'reorder-handle';
+  handle.append(icon('grip'), document.createTextNode('長押しで移動'));
+  handle.setAttribute('aria-label', `${name}を並び替え。上下矢印キーも使えます`);
+  return handle;
 }
 
 function renderAvailable() {
   list(el.availableList, state.blocks, '保存済みメニューがありません。', (block) =>
     card(
       block.name,
-      [`${block.work}秒 運動`, `${block.rest}秒 休憩`, `${block.repeat}回`],
+      [`${durationLabel(block.work)} 運動`, `${durationLabel(block.rest)} 休憩`, `${block.repeat}回`],
       [btn('追加', 'green', () => addBuilder(block.id), { label: `${block.name}を組み合わせに追加` })]
     )
   );
@@ -693,36 +608,16 @@ function addBuilder(id) {
 }
 
 function renderBuilder() {
-  list(el.builderList, state.builder, '追加したメニューがここに表示されます。', (block, index) =>
-    card(
+  list(el.builderList, state.builder, '追加したメニューがここに表示されます。', (block, index) => {
+    const item = card(
       `${index + 1}. ${block.name}`,
-      [`${block.work}秒 運動`, `${block.rest}秒 休憩`, `${block.repeat}回`],
-      [
-        btn('上へ', '', () => moveBuilder(index, -1), {
-          label: `${block.name}を上へ移動`,
-          disabled: index === 0
-        }),
-        btn('下へ', '', () => moveBuilder(index, 1), {
-          label: `${block.name}を下へ移動`,
-          disabled: index === state.builder.length - 1
-        }),
-        btn('外す', 'red', () => removeBuilder(index), {
-          label: `${block.name}を組み合わせから外す`
-        })
-      ]
-    )
-  );
-}
-
-function moveBuilder(index, direction) {
-  const nextIndex = index + direction;
-  if (nextIndex < 0 || nextIndex >= state.builder.length) return;
-  const next = [...state.builder];
-  [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
-  state.builder = next;
-  renderBuilder();
-  updateComboTotal();
-  persistComboDraft();
+      [`${durationLabel(block.work)} 運動`, `${durationLabel(block.rest)} 休憩`, `${block.repeat}回`],
+      [btn('外す', 'red', () => removeBuilder(index), { label: `${block.name}を組み合わせから外す` })]
+    );
+    item.dataset.sortId = block.id;
+    item.prepend(reorderHandle(block.name));
+    return item;
+  });
 }
 
 function removeBuilder(index) {
@@ -1050,7 +945,7 @@ function clearComboDraft() {
 }
 
 function updateComboDraftBadge(hasDraft = hasComboDraft()) {
-  el.comboDraftBadge.textContent = hasDraft ? '下書き' : '›';
+  el.comboDraftBadge.replaceChildren(hasDraft ? document.createTextNode('下書き') : icon('chevron'));
   el.comboCreateButton.setAttribute(
     'aria-label',
     hasDraft ? '組み合わせを作る（下書きあり）' : '組み合わせを作る'
@@ -1256,8 +1151,12 @@ function drawRun() {
     : 100;
 
   el.runTitle.textContent = timer.title;
-  el.blockNameTag.textContent = step.block;
-  el.blockNameTag.classList.toggle('hidden', isStart);
+  const menuStarts = timer.steps.filter(entry => entry.phase === 'WORK' && entry.round === 1);
+  const currentMenu = isStart ? menuStarts[0] : step;
+  el.blockNameTag.textContent = currentMenu?.block || timer.title;
+  el.blockNameTag.title = el.blockNameTag.textContent;
+  $('runPosition').textContent = `メニュー ${Math.max(1, menuStarts.findIndex(entry => entry.blockId === currentMenu?.blockId) + 1)} / ${menuStarts.length}`;
+  el.blockNameTag.classList.remove('hidden');
   el.phase.textContent = timer.paused ? '一時停止' : isStart ? '準備' : isWork ? '運動' : '休憩';
   el.phase.style.color = timer.paused
     ? 'var(--muted)'
@@ -1267,8 +1166,10 @@ function drawRun() {
         ? 'var(--green)'
         : 'var(--orange)';
   el.time.textContent = fmt(timer.remaining);
-  el.step.textContent = isStart ? '準備' : `${step.round} / ${step.repeat}`;
+  el.time.classList.toggle('has-hours', timer.remaining >= 3600);
+  el.step.textContent = `${isStart ? 1 : step.round} / ${currentMenu?.repeat || 1} セット`;
   el.totalLeft.textContent = fmt(timer.totalLeft);
+  labelButton(el.pause, timer.paused ? '再開' : '一時停止', timer.paused ? 'play' : 'pause');
   el.pause.setAttribute('aria-pressed', String(timer.paused));
   el.ring.classList.toggle('is-paused', timer.paused);
   el.ring.style.setProperty('--progress', progress.toFixed(2));
@@ -1286,29 +1187,20 @@ function drawRun() {
 function drawUpcomingMenus() {
   const root = $('upcomingMenus');
   const timer = state.timer;
-  const current = timer.steps[timer.index]?.block;
-  const names = [];
-
-  for (let index = timer.index + 1; index < timer.steps.length; index += 1) {
-    const name = timer.steps[index].block;
-    if (!name || name === '準備' || name === current) continue;
-    if (!names.includes(name)) names.push(name);
-  }
-
-  if (!names.length) {
-    root.replaceChildren();
-    return;
-  }
-
+  const names = timer.steps.slice(timer.index + 1)
+    .filter(step => step.phase === 'WORK' && step.round === 1).map(step => step.block);
+  const key = JSON.stringify(names);
+  if (root.dataset.names === key) return;
+  root.dataset.names = key;
   const title = document.createElement('div');
   title.className = 'upcoming-title';
   title.textContent = '次以降のメニュー';
   const listRoot = document.createElement('div');
   listRoot.className = 'upcoming-list';
-  names.forEach((name) => {
-    const item = document.createElement('span');
-    item.textContent = name;
-    listRoot.appendChild(item);
+  listRoot.tabIndex = 0;
+  listRoot.setAttribute('aria-label', '次以降のメニュー。横にスクロールできます');
+  (names.length ? names : ['このメニューで終了']).forEach(name => {
+    const item = document.createElement('span'); item.textContent = name; item.title = name; listRoot.append(item);
   });
   root.replaceChildren(title, listRoot);
 }
@@ -1968,16 +1860,23 @@ function btn(text, className, handler, options = {}) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = `small ${className || ''}`;
-  button.textContent = text;
+  const symbol = ({ '開始': 'play', '追加': 'plus', '外す': 'close', '削除': 'trash', '内容編集': 'edit', '編集': 'edit', '複製': 'copy' })[text];
+  if (symbol) labelButton(button, text, symbol); else button.textContent = text;
   button.disabled = Boolean(options.disabled);
   if (options.label) button.setAttribute('aria-label', options.label);
   button.addEventListener('click', handler);
   return button;
 }
 
+function durationLabel(value) {
+  const h = Math.floor(value / 3600), m = Math.floor(value % 3600 / 60), s = value % 60;
+  return `${h ? h + '時間' : ''}${m ? m + '分' : ''}${s || (!h && !m) ? s + '秒' : ''}`;
+}
+
 function fmt(value) {
   const secondsTotal = Math.max(0, Math.ceil(Number(value) || 0));
-  const minutes = String(Math.floor(secondsTotal / 60)).padStart(2, '0');
+  const hours = Math.floor(secondsTotal / 3600);
+  const minutes = String(Math.floor(secondsTotal / 60) % 60).padStart(2, '0');
   const seconds = String(secondsTotal % 60).padStart(2, '0');
-  return `${minutes}:${seconds}`;
+  return `${hours ? hours + ':' : ''}${minutes}:${seconds}`;
 }

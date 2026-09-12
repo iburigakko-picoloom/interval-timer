@@ -11,8 +11,8 @@
   --blue-soft: #eef3ff;
   --green: #16713b;
   --green-soft: #edf8f1;
-  --orange: #a64b08;
-  --orange-soft: #fff6e8;
+  --orange: #ed253b;
+  --orange-soft: #fff0f2;
   --red: #b42318;
   --red-soft: #fff1f0;
 }
@@ -667,8 +667,7 @@ input:invalid:not(:placeholder-shown) {
 }
 
 .reorder-handle::before {
-  content: "↕";
-  font-size: 16px;
+  content: none;
 }
 
 .eyebrow {
@@ -1151,4 +1150,67 @@ body.run-screen #run .panel {
     transition: none !important;
     animation: none !important;
   }
+}
+/* Duration fields share the existing second-based storage format. */
+.duration-field { min-width: 0; margin: 0; padding: 0; border: 0; grid-column: 1 / -1; }
+.duration-field legend { margin-bottom: 5px; font-size: 13px; font-weight: 700; }
+.duration-input { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.duration-input label { position: relative; }
+.form-grid .duration-input > label { grid-column: auto !important; }
+.duration-input label > span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); margin: 0; pointer-events: none; }
+#quick .duration-input input, #menu .duration-input input { padding: 9px 26px 9px 10px; font-size: 23px; min-height: 50px; appearance: textfield; -moz-appearance: textfield; }
+.duration-input input::-webkit-inner-spin-button { -webkit-appearance: none; }
+#quick .form-grid > label:last-child { grid-column: auto; }
+#quick .form-grid > label, #menu .form-grid > label { min-width: 0; }
+.ui-icon { width: 20px; height: 20px; flex: 0 0 20px; vertical-align: middle; }
+button > .ui-icon { margin-right: 6px; }
+button { align-items: center; }
+.play-mark .ui-icon { width: 25px; height: 25px; fill: currentColor; }
+.row-value .ui-icon { width: 16px; height: 16px; }
+#savedMenuPageList.editing { display: flex; }
+.reorder-handle { width: auto; margin: 0 0 10px auto; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--blue-soft); color: var(--blue); touch-action: none; -webkit-touch-callout: none; cursor: grab; }
+.reorder-handle:active { transform: none; cursor: grabbing; }
+.item.is-dragging { background: white; border-color: var(--blue); box-shadow: 0 12px 30px #173b8f30; pointer-events: none; }
+.item.is-dragging .reorder-handle { cursor: grabbing; }
+.sort-placeholder { flex: 0 0 auto; border: 2px dashed #90acf0; border-radius: 14px; background: var(--blue-soft); }
+#builderList .small-actions { grid-template-columns: 1fr; }
+[aria-busy="true"] .reorder-handle { opacity: .5; pointer-events: none; }
+
+/* Keep the active menu, set, controls and upcoming queue on one screen. */
+body.run-screen #run .panel { height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px); max-height: 760px; display: grid; grid-template-rows: auto minmax(100px, 1fr) auto auto auto; gap: 8px; padding: 12px; }
+body.run-screen .run-head { display: block; margin: 0; }
+body.run-screen .run-head > div { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; }
+body.run-screen .run-head h2 { font-size: 12px; color: var(--muted); font-weight: 500; text-align: right; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+body.run-screen .wake-status { grid-column: 1 / -1; font-size: 10px; margin: 0; }
+body.run-screen .tag { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; max-width: 100%; padding: 5px 0 0; border: 0; color: var(--text); font-size: 24px; line-height: 1.25; font-weight: 750; white-space: normal; overflow-wrap: anywhere; }
+body.run-screen .ring-wrap { min-height: 0; margin: 0; align-items: center; }
+body.run-screen .ring { width: min(66vw, 30dvh, 270px); height: auto; aspect-ratio: 1; padding: 9px; }
+body.run-screen .ring-inner { padding: 8px; }
+body.run-screen .time { font-size: clamp(40px, 13vw, 64px); }
+body.run-screen .time.has-hours { font-size: clamp(30px, 9vw, 43px); }
+body.run-screen .step { margin-top: 5px; font-size: 16px; font-weight: 700; color: var(--text); }
+body.run-screen .run-actions { grid-template-columns: 1.4fr 1fr .85fr; margin: 0; }
+body.run-screen .run-actions #stop { grid-column: auto; border: 1px solid #f4bac3; background: var(--red-soft); }
+body.run-screen .run-actions .btn { padding: 8px 4px; min-height: 46px; font-size: 12px; white-space: nowrap; }
+body.run-screen .run-actions .ui-icon { width: 17px; height: 17px; margin-right: 3px; }
+body.run-screen .upcoming-menus { min-width: 0; margin: 0; }
+body.run-screen .upcoming-list { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 3px; scrollbar-width: thin; }
+body.run-screen .upcoming-list span { flex: 0 0 auto; max-width: 85%; padding: 6px 9px; background: var(--blue-soft); }
+@media (max-height: 650px) and (orientation: portrait) {
+  body.run-screen .tag { font-size: 20px; }
+  body.run-screen .ring { width: min(55vw, 29dvh); }
+  body.run-screen #run .panel { gap: 5px; }
+  body.run-screen .phase { font-size: 14px; }
+  body.run-screen .step { font-size: 13px; }
+  body.run-screen .time { font-size: 40px; }
+  body.run-screen .time.has-hours { font-size: 28px; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  body.run-screen #run .panel { grid-template-columns: minmax(180px, .85fr) minmax(250px, 1.15fr); grid-template-rows: auto 1fr auto; grid-template-areas: "head info" "ring actions" "ring upcoming"; max-height: none; height: calc(100dvh - 12px); }
+  body.run-screen .ring { width: min(44dvh, 190px); }
+  body.run-screen .tag { font-size: 18px; }
+  body.run-screen .time { font-size: 38px; }
+  body.run-screen .time.has-hours { font-size: 27px; }
+  body.run-screen .step { font-size: 12px; }
+  body.run-screen .run-head h2 { display: none; }
 }

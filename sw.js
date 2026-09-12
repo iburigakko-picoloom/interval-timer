@@ -1,16 +1,20 @@
 const CACHE_PREFIX = 'interval-timer-pwa-';
-const CACHE_NAME = `${CACHE_PREFIX}v40`;
+const CACHE_NAME = `${CACHE_PREFIX}v41`;
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=40',
-  './app.js?v=40',
-  './app-core.js?v=40',
-  './storage-lock.js?v=40',
-  './audio-player.js?v=40',
+  './styles.css?v=41',
+  './app.js?v=41',
+  './app-core.js?v=41',
+  './storage-lock.js?v=41',
+  './audio-player.js?v=41',
+  './duration-input.js?v=41',
+  './sortable.js?v=41',
+  './ui-icons.js?v=41',
   './manifest.json',
-  './icons/timer-192.png',
-  './icons/timer-512.png'
+  './icons/timer.svg?v=41',
+  './icons/timer-192.png?v=41',
+  './icons/timer-512.png?v=41'
 ];
 
 self.addEventListener('install', (event) => {
