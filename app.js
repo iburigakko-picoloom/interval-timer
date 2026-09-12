@@ -13,12 +13,12 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=41';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=41';
-import { createCuePlayer } from './audio-player.js?v=41';
-import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=41';
-import { icon, labelButton } from './ui-icons.js?v=41';
-import { sortable } from './sortable.js?v=41';
+} from './app-core.js?v=42';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=42';
+import { createCuePlayer } from './audio-player.js?v=42';
+import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=42';
+import { icon, labelButton } from './ui-icons.js?v=42';
+import { sortable } from './sortable.js?v=42';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
@@ -1166,7 +1166,7 @@ function drawRun() {
         ? 'var(--green)'
         : 'var(--orange)';
   el.time.textContent = fmt(timer.remaining);
-  el.time.classList.toggle('has-hours', timer.remaining >= 3600);
+  el.time.classList.toggle('long-time', timer.remaining >= 3600);
   el.step.textContent = `${isStart ? 1 : step.round} / ${currentMenu?.repeat || 1} セット`;
   el.totalLeft.textContent = fmt(timer.totalLeft);
   labelButton(el.pause, timer.paused ? '再開' : '一時停止', timer.paused ? 'play' : 'pause');
@@ -1869,14 +1869,13 @@ function btn(text, className, handler, options = {}) {
 }
 
 function durationLabel(value) {
-  const h = Math.floor(value / 3600), m = Math.floor(value % 3600 / 60), s = value % 60;
-  return `${h ? h + '時間' : ''}${m ? m + '分' : ''}${s || (!h && !m) ? s + '秒' : ''}`;
+  const m = Math.floor(value / 60), s = value % 60;
+  return `${m ? m + '分' : ''}${s || !m ? s + '秒' : ''}`;
 }
 
 function fmt(value) {
   const secondsTotal = Math.max(0, Math.ceil(Number(value) || 0));
-  const hours = Math.floor(secondsTotal / 3600);
-  const minutes = String(Math.floor(secondsTotal / 60) % 60).padStart(2, '0');
+  const minutes = String(Math.floor(secondsTotal / 60)).padStart(2, '0');
   const seconds = String(secondsTotal % 60).padStart(2, '0');
-  return `${hours ? hours + ':' : ''}${minutes}:${seconds}`;
+  return `${minutes}:${seconds}`;
 }

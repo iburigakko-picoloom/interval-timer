@@ -1154,7 +1154,7 @@ body.run-screen #run .panel {
 /* Duration fields share the existing second-based storage format. */
 .duration-field { min-width: 0; margin: 0; padding: 0; border: 0; grid-column: 1 / -1; }
 .duration-field legend { margin-bottom: 5px; font-size: 13px; font-weight: 700; }
-.duration-input { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.duration-input { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
 .duration-input label { position: relative; }
 .form-grid .duration-input > label { grid-column: auto !important; }
 .duration-input label > span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); margin: 0; pointer-events: none; }
@@ -1187,7 +1187,7 @@ body.run-screen .ring-wrap { min-height: 0; margin: 0; align-items: center; }
 body.run-screen .ring { width: min(66vw, 30dvh, 270px); height: auto; aspect-ratio: 1; padding: 9px; }
 body.run-screen .ring-inner { padding: 8px; }
 body.run-screen .time { font-size: clamp(40px, 13vw, 64px); }
-body.run-screen .time.has-hours { font-size: clamp(30px, 9vw, 43px); }
+body.run-screen .time.long-time { font-size: clamp(30px, 9vw, 43px); }
 body.run-screen .step { margin-top: 5px; font-size: 16px; font-weight: 700; color: var(--text); }
 body.run-screen .run-actions { grid-template-columns: 1.4fr 1fr .85fr; margin: 0; }
 body.run-screen .run-actions #stop { grid-column: auto; border: 1px solid #f4bac3; background: var(--red-soft); }
@@ -1203,14 +1203,14 @@ body.run-screen .upcoming-list span { flex: 0 0 auto; max-width: 85%; padding: 6
   body.run-screen .phase { font-size: 14px; }
   body.run-screen .step { font-size: 13px; }
   body.run-screen .time { font-size: 40px; }
-  body.run-screen .time.has-hours { font-size: 28px; }
+  body.run-screen .time.long-time { font-size: 28px; }
 }
 @media (orientation: landscape) and (max-height: 500px) {
   body.run-screen #run .panel { grid-template-columns: minmax(180px, .85fr) minmax(250px, 1.15fr); grid-template-rows: auto 1fr auto; grid-template-areas: "head info" "ring actions" "ring upcoming"; max-height: none; height: calc(100dvh - 12px); }
   body.run-screen .ring { width: min(44dvh, 190px); }
   body.run-screen .tag { font-size: 18px; }
   body.run-screen .time { font-size: 38px; }
-  body.run-screen .time.has-hours { font-size: 27px; }
+  body.run-screen .time.long-time { font-size: 27px; }
   body.run-screen .step { font-size: 12px; }
   body.run-screen .run-head h2 { display: none; }
 }

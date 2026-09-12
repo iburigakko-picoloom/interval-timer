@@ -28,11 +28,12 @@ const enter = (input, value) => { input.value = value; input.dispatchEvent(new w
 const duration = id => $(id).closest('.duration-input').querySelectorAll('input');
 try {
   await settle();
-  const [hours, minutes, seconds] = duration('quickWork');
-  enter(hours, '1'); enter(minutes, '2'); enter(seconds, '3');
+  const [minutes, seconds] = duration('quickWork');
+  assert.equal(duration('quickWork').length, 2);
+  enter(minutes, '62'); enter(seconds, '3');
   assert.equal(w.durationSeconds($('quickWork')), 3723);
-  enter(hours, '24'); assert.equal($('quickForm').checkValidity(), false);
-  enter(hours, '1'); assert.equal($('quickForm').checkValidity(), true);
+  enter(minutes, '1440'); assert.equal($('quickForm').checkValidity(), false);
+  enter(minutes, '62'); assert.equal($('quickForm').checkValidity(), true);
   enter($('quickName'), 'A'); $('quickSave').click(); await settle();
   w.document.querySelector('[data-view="quick"]').click();
   enter($('quickName'), 'B'); $('quickSave').click(); await settle();
@@ -42,7 +43,7 @@ try {
   await settle();
   assert.equal($('savedMenuPageList').querySelector('.item-title').textContent, 'B');
   $('savedMenuPageList').querySelector('[aria-label="Bの内容を編集"]').click();
-  assert.deepEqual([...duration('menuWork')].map(input => input.value), ['1', '2', '3']);
+  assert.deepEqual([...duration('menuWork')].map(input => input.value), ['62', '3']);
   $('comboCreateButton').click();
   $('availableList').querySelectorAll('button').forEach(button => button.click());
   enter($('comboName'), 'Course');
@@ -70,7 +71,7 @@ try {
   assert.equal($('blockNameTag').textContent, 'A');
   assert.equal($('step').textContent, '1 / 8 セット');
   $('skip').click(); await settle();
-  assert.equal($('time').textContent, '1:02:03');
+  assert.equal($('time').textContent, '62:03');
   assert.match($('upcomingMenus').textContent, /B/);
   assert.equal($('runPosition').textContent, 'メニュー 1 / 2');
   console.log('PASS: duration conversion/validation, save/edit, keyboard reorder, long-press drop/cancel, timer labels and upcoming queue');
