@@ -1,14 +1,19 @@
 export const CUE_TONES = Object.freeze({
-  ready: Object.freeze({ freq: 1760, duration: 0.5 }),
-  preview: Object.freeze({ freq: 1760, duration: 0.5 }),
+  ready: Object.freeze({ freq: 1760, duration: 0.7 }),
+  preview: Object.freeze({ freq: 1760, duration: 0.7 }),
   countdown: Object.freeze({ freq: 1320, duration: 0.32 }),
-  work: Object.freeze({ freq: 1760, duration: 0.5 }),
-  rest: Object.freeze({ freq: 1760, duration: 0.4 }),
-  complete: Object.freeze({ freq: 1760, duration: 0.68 })
+  work: Object.freeze({ freq: 1760, duration: 0.7 }),
+  rest: Object.freeze({ freq: 1760, duration: 0.6 }),
+  complete: Object.freeze({ freq: 1760, duration: 0.9 })
 });
 
 const SAMPLE_RATE = 44100;
 const WAV_HEADER_SIZE = 44;
+
+// Boost the former 0.92 peak by 1.3, limiting before output to avoid clipping.
+function outputVolume(volume) {
+  return Math.min(1, (volume / 100) * 0.92 * 1.3);
+}
 
 function boundedVolume(value) {
   const parsed = Number(value);
@@ -61,7 +66,7 @@ export function createToneWavDataUri(tone, base64Encode = defaultBase64Encode) {
     const release = Math.min(1, (sampleCount - index - 1) / releaseSamples);
     const envelope = Math.max(0, Math.min(attack, release));
     const wave = Math.sin((2 * Math.PI * frequency * index) / SAMPLE_RATE);
-    view.setInt16(WAV_HEADER_SIZE + index * 2, Math.round(wave * envelope * 0.92 * 32767), true);
+    view.setInt16(WAV_HEADER_SIZE + index * 2, Math.round(wave * envelope * 32767), true);
   }
 
   const bytes = new Uint8Array(buffer);
@@ -98,7 +103,7 @@ export function createCuePlayer({
       element.playsInline = true;
       element.defaultMuted = false;
       element.muted = false;
-      element.volume = volume / 100;
+      element.volume = outputVolume(volume);
       element.setAttribute?.('aria-hidden', 'true');
       element.setAttribute?.('playsinline', '');
       element.setAttribute?.('webkit-playsinline', '');
@@ -143,7 +148,7 @@ export function createCuePlayer({
       }
       media.defaultMuted = false;
       media.muted = false;
-      media.volume = volume / 100;
+      media.volume = outputVolume(volume);
       const started = media.play();
       if (started?.then) await started;
       return true;
@@ -168,7 +173,7 @@ export function createCuePlayer({
       }
 
       const master = ctx.createGain();
-      master.gain.value = volume / 100;
+      master.gain.value = outputVolume(volume);
       master.connect(ctx.destination);
       return { ctx, master };
     } catch {
@@ -214,8 +219,8 @@ export function createCuePlayer({
     oscillator.type = 'sine';
     oscillator.frequency.value = tone.freq;
     gain.gain.setValueAtTime(0.0001, startAt);
-    gain.gain.exponentialRampToValueAtTime(0.92, startAt + 0.01);
-    gain.gain.setValueAtTime(0.92, Math.max(startAt + 0.011, endAt - 0.055));
+    gain.gain.exponentialRampToValueAtTime(1, startAt + 0.01);
+    gain.gain.setValueAtTime(1, Math.max(startAt + 0.011, endAt - 0.055));
     gain.gain.exponentialRampToValueAtTime(0.0001, endAt);
     oscillator.connect(gain);
     gain.connect(master);
@@ -287,12 +292,12 @@ export function createCuePlayer({
 
   function setVolume(value) {
     volume = boundedVolume(value);
-    if (media) media.volume = volume / 100;
+    if (media) media.volume = outputVolume(volume);
 
     discardClosedEngine();
     if (!engine) return;
     try {
-      engine.master.gain.setTargetAtTime(volume / 100, engine.ctx.currentTime, 0.01);
+      engine.master.gain.setTargetAtTime(outputVolume(volume), engine.ctx.currentTime, 0.01);
     } catch {
       engine = null;
     }

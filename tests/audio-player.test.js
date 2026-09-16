@@ -225,7 +225,9 @@ test('volume changes update the reusable media element', async () => {
   assert.equal(await player.play('preview'), true);
 
   player.setVolume(40);
-  assert.equal(media.instances[0].volume, 0.4);
+  assert.equal(media.instances[0].volume, 0.4 * 0.92 * 1.3);
+  player.setVolume(100);
+  assert.equal(media.instances[0].volume, 1);
 });
 
 test('a suspended context is running before a cue is scheduled', async () => {
@@ -315,7 +317,7 @@ test('volume changes update the active master gain', async () => {
 
   player.setVolume(40);
   const masterGain = fake.instances[0].gains[0].gain;
-  assert.deepEqual(masterGain.calls.at(-1), ['target', 0.4, 4, 0.01]);
+  assert.deepEqual(masterGain.calls.at(-1), ['target', 0.4 * 0.92 * 1.3, 4, 0.01]);
 });
 
 test('missing Web Audio support is reported without throwing', async () => {
