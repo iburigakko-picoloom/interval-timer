@@ -584,6 +584,7 @@ input:invalid:not(:placeholder-shown) {
 #availableList .small-actions {
   grid-column: 2;
   grid-row: 1 / span 2;
+  grid-template-columns: 1fr;
   margin: 0;
 }
 
@@ -627,9 +628,42 @@ input:invalid:not(:placeholder-shown) {
   font-size: 12px;
 }
 
+.saved-menu-card.normal,
+.saved-combo-card.normal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  padding-block: 10px;
+}
+
+.saved-menu-card.normal .item-title,
+.saved-combo-card.normal .item-title {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  margin: 0;
+}
+
+.saved-menu-card.normal .metrics,
+.saved-combo-card.normal .metrics {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+}
+
 .saved-menu-card.normal .small-actions,
 .saved-combo-card.normal .small-actions {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
   grid-template-columns: 1fr;
+  margin: 0;
+}
+
+.saved-menu-card.normal .small-actions .small,
+.saved-combo-card.normal .small-actions .small {
+  min-width: 76px;
+  white-space: nowrap;
 }
 
 .saved-menu-card.editing .small-actions,

@@ -13,12 +13,12 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=42';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=42';
-import { createCuePlayer } from './audio-player.js?v=44';
-import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=42';
-import { icon, labelButton } from './ui-icons.js?v=42';
-import { sortable } from './sortable.js?v=42';
+} from './app-core.js?v=45';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=45';
+import { createCuePlayer } from './audio-player.js?v=45';
+import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=45';
+import { icon, labelButton } from './ui-icons.js?v=45';
+import { sortable } from './sortable.js?v=45';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
