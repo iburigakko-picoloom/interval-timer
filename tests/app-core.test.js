@@ -766,6 +766,18 @@ test('a concurrent v3 save aborts the mirror and rolls back its legacy writes', 
   assert.equal(mirrored.recovery.combos.status, 'restored');
 });
 
+test('only the final rest is omitted, including single timers and combinations', () => {
+  const single = buildTimerSteps([validBlock({ work: 30, rest: 10, repeat: 1 })], 0);
+  assert.deepEqual(single.map(step => step.phase), ['WORK']);
+  assert.equal(single[0].duration, 30);
+  const combo = buildTimerSteps([
+    validBlock({ id: 'first', work: 30, rest: 10, repeat: 2 }),
+    validBlock({ id: 'last', work: 20, rest: 5, repeat: 2 })
+  ], 0);
+  assert.deepEqual(combo.map(step => step.phase), ['WORK', 'REST', 'WORK', 'REST', 'WORK', 'REST', 'WORK']);
+  assert.equal(combo.reduce((sum, step) => sum + step.duration, 0), 125);
+});
+
 test('timer advancement crosses phases and completes deterministically', () => {
   const steps = buildTimerSteps([
     validBlock({ work: 3, rest: 2, repeat: 1 })
@@ -818,7 +830,7 @@ test('timer snapshot rejects an oversized persisted step list', () => {
 test('huge repeat and oversized block arrays cannot create unbounded timer steps', () => {
   const huge = validBlock({ repeat: Number.MAX_SAFE_INTEGER });
   const single = buildTimerSteps([huge]);
-  assert.equal(single.length, 1 + LIMITS.MAX_REPEAT * 2);
+  assert.equal(single.length, LIMITS.MAX_REPEAT * 2);
 
   const many = Array.from(
     { length: LIMITS.MAX_COMBO_ITEMS + 50 },

@@ -265,6 +265,15 @@ body.home-screen .topbar {
 }
 
 .start-copy { display: grid; gap: 4px; }
+.start-copy small { font-size: 15px; font-weight: 600; }
+.quick-launch { display: grid; grid-template-columns: minmax(0, 1fr) 54px; align-items: stretch; gap: 8px; }
+.quick-launch .big-start { padding: 12px; gap: 6px; }
+.quick-launch .start-copy strong { font-size: clamp(18px, 5.5vw, 25px); }
+.quick-launch .play-mark { width: 36px; height: 36px; }
+.quick-settings { padding: 8px; border-radius: 14px; }
+.quick-interval { margin-top: 18px; border-top: 1px solid var(--line); }
+.quick-interval summary { padding: 12px 0; min-height: 44px; cursor: pointer; font-size: 14px; font-weight: 700; }
+.quick-interval summary:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .start-copy strong { font-size: clamp(23px, 6vw, 28px); letter-spacing: -.03em; }
 .play-mark { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; background: white; color: var(--blue); padding-left: 3px; }
 
@@ -1058,7 +1067,7 @@ body.run-screen #run .panel {
     gap: 6px 8px;
   }
 
-  body.home-screen .big-start,
+  body.home-screen .quick-launch,
   body.home-screen .sound-card {
     grid-column: 1 / -1;
   }

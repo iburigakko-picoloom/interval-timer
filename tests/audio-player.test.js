@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createCuePlayer, createToneWavDataUri } from '../audio-player.js';
+import { CUE_TONES, createCuePlayer, createToneWavDataUri } from '../audio-player.js';
 
 function audioParam(initialValue = 0) {
   return {
@@ -135,6 +135,23 @@ test('generated media tones are valid mono PCM WAV data', () => {
   assert.ok(bytes.length > 44);
 });
 
+test('completion is three separated long tones on both audio paths and a new cue cancels the tail', async () => {
+  const tone = CUE_TONES.complete;
+  const uri = createToneWavDataUri(tone, encodeBase64);
+  const bytes = Buffer.from(uri.split(',')[1], 'base64');
+  assert.equal((bytes.length - 44) / 2, Math.ceil(tone.duration * 44100) * 3 + Math.ceil(tone.gap * 44100) * 2);
+  for (const seconds of [0.95, 2.05]) assert.equal(bytes.readInt16LE(44 + Math.floor(seconds * 44100) * 2), 0);
+  for (const seconds of [0.123, 1.223, 2.323]) assert.notEqual(bytes.readInt16LE(44 + Math.floor(seconds * 44100) * 2), 0);
+  const fake = createFakeAudioContext();
+  const player = createCuePlayer({ AudioContextClass: fake.AudioContextClass });
+  assert.equal(await player.play('complete'), true);
+  const notes = fake.instances[0].oscillators.slice();
+  assert.equal(notes.length, 3);
+  for (let i = 0; i < 3; i++) assert.ok(Math.abs(notes[i].startedAt - (4.01 + i * 1.1)) < 0.0001);
+  await player.play('ready');
+  assert.ok(notes.every(note => note.stoppedAt === undefined));
+});
+
 test('prepare mounts and preloads mobile media without starting playback', () => {
   const media = createFakeAudio();
   const mounted = [];
@@ -196,7 +213,7 @@ test('the same permitted media element is reused for later timer cues', async ()
   assert.equal(await player.play('countdown'), true);
   assert.equal(media.instances.length, 1);
   assert.equal(media.instances[0].playCalls, 2);
-  assert.equal(media.instances[0].pauseCalls, 2);
+  assert.equal(media.instances[0].pauseCalls, 3); // Stop the prior cue before starting the next.
   assert.equal(media.instances[0].loadCalls, 2);
 });
 

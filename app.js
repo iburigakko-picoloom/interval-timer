@@ -13,17 +13,18 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=45';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=45';
-import { createCuePlayer } from './audio-player.js?v=45';
-import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=45';
-import { icon, labelButton } from './ui-icons.js?v=45';
-import { sortable } from './sortable.js?v=45';
+} from './app-core.js?v=46';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=46';
+import { createCuePlayer } from './audio-player.js?v=46';
+import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=46';
+import { icon, labelButton } from './ui-icons.js?v=46';
+import { sortable } from './sortable.js?v=46';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
 const TIMER_KEY = STORE_KEYS.timer || 'interval_active_timer_v1';
 const COMBO_DRAFT_KEY = STORE_KEYS.comboDraft || 'interval_combo_draft_v1';
+const QUICK_DURATION_KEY = 'interval_quick_duration_v1';
 const NAME_LIMIT = LIMITS.MAX_NAME_LENGTH || 60;
 const TIMER_OWNER_ID = createId('timer_tab');
 const COLLECTION_LOCK_OWNER_ID = createId('storage_tab');
@@ -45,6 +46,7 @@ const state = {
   savedMenusEditing: false,
   savedCombosEditing: false,
   currentView: 'home',
+  quickDuration: loadNumberPreference(localStorage, QUICK_DURATION_KEY, 0, 0, LIMITS.MAX_SECONDS).value,
   soundVolume: loadNumberPreference(
     localStorage,
     STORE_KEYS.SOUND_VOLUME || 'interval_sound_volume_v1',
@@ -138,7 +140,8 @@ const el = {
   wakeStatus: $('wakeStatus')
 };
 
-for (const [input, name] of [[el.quickWork, '運動'], [el.quickRest, '休憩'], [el.menuWork, '運動'], [el.menuRest, '休憩']]) enhanceDuration(input, name, LIMITS.MAX_SECONDS);
+for (const [input, name] of [[$('quickDuration'), '時間'], [el.quickWork, '運動'], [el.quickRest, '休憩'], [el.menuWork, '運動'], [el.menuRest, '休憩']]) enhanceDuration(input, name, LIMITS.MAX_SECONDS);
+setDuration($('quickDuration'), Math.floor(state.quickDuration) || 180);
 document.querySelectorAll('[data-icon]').forEach(node => node.replaceChildren(icon(node.dataset.icon)));
 for (const [id, name] of [['homeBtn', 'home'], ['quickStart', 'play'], ['quickSave', 'save'], ['soundTest', 'sound'], ['skip', 'skip'], ['stop', 'stop']]) {
   const button = $(id); labelButton(button, button.textContent, name);
@@ -174,6 +177,22 @@ function bindEvents() {
   });
 
   el.homeBtn.addEventListener('click', () => show('home'));
+  $('homeQuickStart').addEventListener('click', () => {
+    const seconds = Math.floor(state.quickDuration);
+    if (seconds < 1) { show('quick'); return; }
+    const name = durationLabel(seconds);
+    start([{ id: createId('quick'), name, work: seconds, rest: 1, repeat: 1 }], name);
+  });
+  $('quickDurationForm').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!$('quickDurationForm').reportValidity()) return;
+    const seconds = durationSeconds($('quickDuration'));
+    const saved = savePreference(localStorage, QUICK_DURATION_KEY, seconds);
+    if (!saved.ok) { showNotice('時間を登録できませんでした', 'error'); return; }
+    state.quickDuration = seconds;
+    renderQuickDuration();
+    show('home');
+  });
   el.quickForm.addEventListener('submit', (event) => {
     event.preventDefault();
     quickStart();
@@ -220,7 +239,7 @@ function updateQuickSummary() {
   const inputs = [el.quickWork, el.quickRest, el.quickRepeat];
   const valid = [...el.quickForm.querySelectorAll('input')].every(input => input.validity.valid);
   const [work, rest, repeat] = inputs.map(readPositiveInteger);
-  $('quickTotal').textContent = valid ? `合計 ${fmt((work + rest) * repeat)}（準備時間を除く）` : '時間と回数を入力';
+  $('quickTotal').textContent = valid ? `合計 ${fmt((work + rest) * repeat - rest)}（準備時間を除く）` : '時間と回数を入力';
   document.querySelectorAll('[data-preset]').forEach((button) => {
     button.setAttribute('aria-pressed', String(valid && button.dataset.preset === `${work},${rest},${repeat}`));
   });
@@ -330,6 +349,7 @@ async function handlePopState() {
 }
 
 function render() {
+  renderQuickDuration();
   el.homeSavedMenuCount.textContent = state.blocks.length;
   el.homeSavedComboCount.textContent = state.combos.length;
   updateComboDraftBadge();
@@ -345,6 +365,12 @@ function render() {
   updateComboControls();
   updateComboTotal();
   updateSoundUI();
+}
+
+function renderQuickDuration() {
+  const seconds = Math.floor(state.quickDuration);
+  $('homeQuickDuration').textContent = seconds > 0 ? durationLabel(seconds) : '時間を登録';
+  $('homeQuickStart').setAttribute('aria-label', seconds > 0 ? `${durationLabel(seconds)}でクイック開始` : 'クイック開始の時間を登録');
 }
 
 function validateForm(form) {
@@ -629,10 +655,7 @@ function removeBuilder(index) {
 }
 
 function updateComboTotal() {
-  const total = state.builder.reduce(
-    (sum, block) => sum + (block.work + block.rest) * block.repeat,
-    0
-  );
+  const total = buildTimerSteps(state.builder, 0).reduce((sum, step) => sum + step.duration, 0);
   el.comboTotal.replaceChildren(
     document.createTextNode('合計 '),
     Object.assign(document.createElement('span'), { textContent: fmt(total) })
@@ -845,10 +868,7 @@ function updateSavedComboEditUI() {
 }
 
 function savedComboCard(combo) {
-  const total = combo.items.reduce(
-    (sum, block) => sum + (block.work + block.rest) * block.repeat,
-    0
-  );
+  const total = buildTimerSteps(combo.items, 0).reduce((sum, step) => sum + step.duration, 0);
   const editing = state.savedCombosEditing;
   const buttons = editing
     ? [

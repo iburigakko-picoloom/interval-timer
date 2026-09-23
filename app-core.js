@@ -1921,6 +1921,8 @@ export function buildTimerSteps(blocks, preparationSeconds = 5) {
     }
   }
 
+  // Rest is only needed between work periods, never after the final one.
+  if (steps.at(-1)?.phase === 'REST') steps.pop();
   return steps;
 }
 

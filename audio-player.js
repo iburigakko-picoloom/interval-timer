@@ -4,7 +4,7 @@ export const CUE_TONES = Object.freeze({
   countdown: Object.freeze({ freq: 1320, duration: 0.32 }),
   work: Object.freeze({ freq: 1760, duration: 0.7 }),
   rest: Object.freeze({ freq: 1760, duration: 0.6 }),
-  complete: Object.freeze({ freq: 1760, duration: 0.9 })
+  complete: Object.freeze({ freq: 1760, duration: 0.9, repeats: 3, gap: 0.2 })
 });
 
 const SAMPLE_RATE = 44100;
@@ -40,7 +40,11 @@ export function createToneWavDataUri(tone, base64Encode = defaultBase64Encode) {
     return null;
   }
 
-  const sampleCount = Math.max(1, Math.ceil(duration * SAMPLE_RATE));
+  const repeats = Math.min(3, Math.max(1, Math.floor(Number(tone.repeats) || 1)));
+  const gap = repeats > 1 ? Math.max(0, Number(tone.gap) || 0) : 0;
+  const toneSamples = Math.max(1, Math.ceil(duration * SAMPLE_RATE));
+  const gapSamples = Math.ceil(gap * SAMPLE_RATE);
+  const sampleCount = toneSamples * repeats + gapSamples * (repeats - 1);
   const sampleBytes = sampleCount * 2;
   const buffer = new ArrayBuffer(WAV_HEADER_SIZE + sampleBytes);
   const view = new DataView(buffer);
@@ -62,10 +66,12 @@ export function createToneWavDataUri(tone, base64Encode = defaultBase64Encode) {
   const attackSamples = Math.max(1, Math.floor(SAMPLE_RATE * 0.01));
   const releaseSamples = Math.max(1, Math.floor(SAMPLE_RATE * 0.055));
   for (let index = 0; index < sampleCount; index += 1) {
-    const attack = Math.min(1, index / attackSamples);
-    const release = Math.min(1, (sampleCount - index - 1) / releaseSamples);
+    const localIndex = index % (toneSamples + gapSamples);
+    if (localIndex >= toneSamples) continue;
+    const attack = Math.min(1, localIndex / attackSamples);
+    const release = Math.min(1, (toneSamples - localIndex - 1) / releaseSamples);
     const envelope = Math.max(0, Math.min(attack, release));
-    const wave = Math.sin((2 * Math.PI * frequency * index) / SAMPLE_RATE);
+    const wave = Math.sin((2 * Math.PI * frequency * localIndex) / SAMPLE_RATE);
     view.setInt16(WAV_HEADER_SIZE + index * 2, Math.round(wave * envelope * 32767), true);
   }
 
@@ -92,6 +98,16 @@ export function createCuePlayer({
   let media = null;
   let volume = boundedVolume(initialVolume);
   const mediaSources = new Map();
+  const activeOscillators = new Set();
+  let playbackId = 0;
+
+  function stopPlaying() {
+    media?.pause?.();
+    for (const oscillator of activeOscillators) {
+      try { oscillator.stop(); oscillator.disconnect(); } catch { /* Already ended. */ }
+    }
+    activeOscillators.clear();
+  }
 
   function createMediaElement() {
     if (typeof AudioClass !== 'function' || typeof base64Encode !== 'function') return null;
@@ -121,7 +137,7 @@ export function createCuePlayer({
   }
 
   function sourceForTone(tone) {
-    const key = `${tone.freq}:${tone.duration}`;
+    const key = `${tone.freq}:${tone.duration}:${tone.repeats || 1}:${tone.gap || 0}`;
     if (!mediaSources.has(key)) {
       mediaSources.set(key, createToneWavDataUri(tone, base64Encode));
     }
@@ -209,9 +225,9 @@ export function createCuePlayer({
     return current.ctx.state === 'running' ? current : null;
   }
 
-  function scheduleWebAudioTone(current, tone) {
+  function scheduleWebAudioTone(current, tone, offset = 0) {
     const { ctx, master } = current;
-    const startAt = ctx.currentTime + 0.01;
+    const startAt = ctx.currentTime + 0.01 + offset;
     const endAt = startAt + tone.duration;
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -225,6 +241,7 @@ export function createCuePlayer({
     oscillator.connect(gain);
     gain.connect(master);
     oscillator.onended = () => {
+      activeOscillators.delete(oscillator);
       try {
         oscillator.disconnect();
         gain.disconnect();
@@ -232,16 +249,19 @@ export function createCuePlayer({
         // Nodes may already be disconnected by the browser.
       }
     };
+    activeOscillators.add(oscillator);
     oscillator.start(startAt);
     oscillator.stop(endAt + 0.03);
   }
 
-  async function playWebAudioTone(tone, pendingEngine = unlockWebAudio()) {
+  async function playWebAudioTone(tone, pendingEngine, id) {
     const current = await pendingEngine;
-    if (!current) return false;
+    if (!current || id !== playbackId) return false;
 
     try {
-      scheduleWebAudioTone(current, tone);
+      for (let index = 0; index < (tone.repeats || 1); index += 1) {
+        scheduleWebAudioTone(current, tone, index * (tone.duration + (tone.gap || 0)));
+      }
       return true;
     } catch {
       return false;
@@ -249,21 +269,26 @@ export function createCuePlayer({
   }
 
   async function play(kind) {
+    const id = ++playbackId;
+    stopPlaying();
     if (volume === 0) return false;
     const tone = CUE_TONES[kind] || CUE_TONES.countdown;
 
     const pendingEngine = unlockWebAudio();
     if (preferWebAudio) {
-      if (await playWebAudioTone(tone, pendingEngine)) return true;
+      if (await playWebAudioTone(tone, pendingEngine, id)) return true;
+      if (id !== playbackId) return false;
       return playMediaTone(tone);
     }
 
     const mediaPlayback = playMediaTone(tone);
     if (await mediaPlayback) return true;
-    return playWebAudioTone(tone, pendingEngine);
+    return playWebAudioTone(tone, pendingEngine, id);
   }
 
   async function unlock() {
+    playbackId += 1;
+    stopPlaying();
     if (volume === 0) return false;
     const mediaPlayback = playMediaTone(CUE_TONES.ready);
     const pendingEngine = unlockWebAudio();

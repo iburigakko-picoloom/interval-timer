@@ -28,6 +28,23 @@ const enter = (input, value) => { input.value = value; input.dispatchEvent(new w
 const duration = id => $(id).closest('.duration-input').querySelectorAll('input');
 try {
   await settle();
+  $('homeQuickStart').click();
+  assert.equal($('quick').classList.contains('active'), true);
+  const [quickMinutes, quickSeconds] = duration('quickDuration');
+  enter(quickMinutes, '2'); enter(quickSeconds, '15');
+  $('quickDurationForm').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+  assert.equal($('homeQuickDuration').textContent, '2分15秒');
+  assert.equal(JSON.parse(w.localStorage.getItem('interval_quick_duration_v1')), 135);
+  assert.equal(core.loadNumberPreference(w.localStorage, 'interval_quick_duration_v1', 0, 0, core.LIMITS.MAX_SECONDS).value, 135);
+  assert.equal($('savedMenuPageList').querySelectorAll('.item').length, 0);
+  $('homeQuickStart').click();
+  $('skip').click();
+  assert.equal($('time').textContent, '02:15');
+  assert.equal($('next').textContent, '終了');
+  $('skip').click();
+  assert.equal($('home').classList.contains('active'), true);
+  w.document.querySelector('[data-view="quick"]').click();
+  w.document.querySelector('.quick-interval').open = true;
   const [minutes, seconds] = duration('quickWork');
   assert.equal(duration('quickWork').length, 2);
   enter(minutes, '62'); enter(seconds, '3');
