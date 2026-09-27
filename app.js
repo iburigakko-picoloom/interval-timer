@@ -13,18 +13,19 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=46';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=46';
-import { createCuePlayer } from './audio-player.js?v=46';
-import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=46';
-import { icon, labelButton } from './ui-icons.js?v=46';
-import { sortable } from './sortable.js?v=46';
+} from './app-core.js?v=47';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=47';
+import { createCuePlayer } from './audio-player.js?v=47';
+import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=47';
+import { icon, labelButton } from './ui-icons.js?v=47';
+import { sortable } from './sortable.js?v=47';
 
 const $ = (id) => document.getElementById(id);
-const VIEWS = new Set(['home', 'quick', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
+const VIEWS = new Set(['home', 'quick', 'quickSettings', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
 const TIMER_KEY = STORE_KEYS.timer || 'interval_active_timer_v1';
 const COMBO_DRAFT_KEY = STORE_KEYS.comboDraft || 'interval_combo_draft_v1';
-const QUICK_DURATION_KEY = 'interval_quick_duration_v1';
+const QUICK_PRESETS_KEY = 'interval_quick_presets_v1';
+const DEFAULT_QUICK_PRESETS = [[20, 10, 100], [40, 20, 100], [60, 30, 100]];
 const NAME_LIMIT = LIMITS.MAX_NAME_LENGTH || 60;
 const TIMER_OWNER_ID = createId('timer_tab');
 const COLLECTION_LOCK_OWNER_ID = createId('storage_tab');
@@ -46,7 +47,7 @@ const state = {
   savedMenusEditing: false,
   savedCombosEditing: false,
   currentView: 'home',
-  quickDuration: loadNumberPreference(localStorage, QUICK_DURATION_KEY, 0, 0, LIMITS.MAX_SECONDS).value,
+  quickPresets: loadQuickPresets(),
   soundVolume: loadNumberPreference(
     localStorage,
     STORE_KEYS.SOUND_VOLUME || 'interval_sound_volume_v1',
@@ -140,8 +141,7 @@ const el = {
   wakeStatus: $('wakeStatus')
 };
 
-for (const [input, name] of [[$('quickDuration'), '時間'], [el.quickWork, '運動'], [el.quickRest, '休憩'], [el.menuWork, '運動'], [el.menuRest, '休憩']]) enhanceDuration(input, name, LIMITS.MAX_SECONDS);
-setDuration($('quickDuration'), Math.floor(state.quickDuration) || 180);
+for (const [input, name] of [[el.quickWork, '運動'], [el.quickRest, '休憩'], [el.menuWork, '運動'], [el.menuRest, '休憩']]) enhanceDuration(input, name, LIMITS.MAX_SECONDS);
 document.querySelectorAll('[data-icon]').forEach(node => node.replaceChildren(icon(node.dataset.icon)));
 for (const [id, name] of [['homeBtn', 'home'], ['quickStart', 'play'], ['quickSave', 'save'], ['soundTest', 'sound'], ['skip', 'skip'], ['stop', 'stop']]) {
   const button = $(id); labelButton(button, button.textContent, name);
@@ -177,21 +177,15 @@ function bindEvents() {
   });
 
   el.homeBtn.addEventListener('click', () => show('home'));
-  $('homeQuickStart').addEventListener('click', () => {
-    const seconds = Math.floor(state.quickDuration);
-    if (seconds < 1) { show('quick'); return; }
-    const name = durationLabel(seconds);
-    start([{ id: createId('quick'), name, work: seconds, rest: 1, repeat: 1 }], name);
-  });
-  $('quickDurationForm').addEventListener('submit', event => {
+  $('quickPresetsForm').addEventListener('submit', event => {
     event.preventDefault();
-    if (!$('quickDurationForm').reportValidity()) return;
-    const seconds = durationSeconds($('quickDuration'));
-    const saved = savePreference(localStorage, QUICK_DURATION_KEY, seconds);
-    if (!saved.ok) { showNotice('時間を登録できませんでした', 'error'); return; }
-    state.quickDuration = seconds;
-    renderQuickDuration();
-    show('home');
+    if (!$('quickPresetsForm').reportValidity()) return;
+    const presets = [0, 1, 2].map(i => [durationSeconds($(`presetWork${i}`)), durationSeconds($(`presetRest${i}`)), 100]);
+    const saved = savePreference(localStorage, QUICK_PRESETS_KEY, presets);
+    if (!saved.ok) { showNotice('設定を保存できませんでした', 'error'); return; }
+    state.quickPresets = presets;
+    renderQuickPresets();
+    show('quick');
   });
   el.quickForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -282,6 +276,7 @@ function show(id, options = {}) {
 
   const historyMode = options.history ?? 'push';
   state.currentView = id;
+  if (id === 'quickSettings') renderQuickSettings();
 
   if (id !== 'savedMenus' && state.savedMenusEditing) {
     state.savedMenusEditing = false;
@@ -349,7 +344,7 @@ async function handlePopState() {
 }
 
 function render() {
-  renderQuickDuration();
+  renderQuickPresets();
   el.homeSavedMenuCount.textContent = state.blocks.length;
   el.homeSavedComboCount.textContent = state.combos.length;
   updateComboDraftBadge();
@@ -367,10 +362,46 @@ function render() {
   updateSoundUI();
 }
 
-function renderQuickDuration() {
-  const seconds = Math.floor(state.quickDuration);
-  $('homeQuickDuration').textContent = seconds > 0 ? durationLabel(seconds) : '時間を登録';
-  $('homeQuickStart').setAttribute('aria-label', seconds > 0 ? `${durationLabel(seconds)}でクイック開始` : 'クイック開始の時間を登録');
+function loadQuickPresets() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(QUICK_PRESETS_KEY));
+    if (Array.isArray(saved) && saved.length === 3 && saved.every(row => Array.isArray(row) && row.length === 3 && row.every((value, i) => Number.isInteger(value) && value >= 1 && value <= (i === 2 ? LIMITS.MAX_REPEAT : LIMITS.MAX_SECONDS)))) return saved.map(([work, rest]) => [work, rest, 100]);
+  } catch { /* Keep invalid stored data untouched and use defaults. */ }
+  return DEFAULT_QUICK_PRESETS.map(row => [...row]);
+}
+
+function renderQuickPresets() {
+  document.querySelectorAll('[data-preset]').forEach((button, index) => {
+    const [work, rest, repeat] = state.quickPresets[index];
+    button.dataset.preset = `${work},${rest},${repeat}`;
+    const count = document.createElement('small'); count.textContent = `${repeat}セット`;
+    button.replaceChildren(document.createTextNode(`${durationLabel(work)} / ${durationLabel(rest)}`), count);
+    button.setAttribute('aria-label', `運動${durationLabel(work)}、休憩${durationLabel(rest)}、${repeat}セット`);
+  });
+  updateQuickSummary();
+}
+
+function renderQuickSettings() {
+  const root = $('quickPresetsFields');
+  root.replaceChildren();
+  state.quickPresets.forEach(([work, rest], index) => {
+    const card = document.createElement('fieldset'); card.className = 'item preset-settings-card';
+    const legend = document.createElement('legend'); legend.textContent = `プリセット ${index + 1}`;
+    const grid = document.createElement('div'); grid.className = 'form-grid';
+    card.append(legend, grid); root.append(card);
+    for (const [kind, title, value] of [['Work', '運動', work], ['Rest', '休憩', rest]]) {
+      const label = document.createElement('label');
+      const caption = document.createElement('span'); caption.textContent = title;
+      const input = document.createElement('input');
+      input.id = `preset${kind}${index}`; input.type = 'number'; input.min = '1'; input.max = String(kind === 'Repeat' ? LIMITS.MAX_REPEAT : LIMITS.MAX_SECONDS); input.step = '1'; input.required = true; input.inputMode = 'numeric'; input.value = value;
+      input.setAttribute('aria-label', `プリセット${index + 1} ${title}`);
+      label.append(caption, input); grid.append(label);
+      if (kind !== 'Repeat') {
+        enhanceDuration(input, title, LIMITS.MAX_SECONDS);
+        input.closest('.duration-field').querySelectorAll('input').forEach(field => field.setAttribute('aria-label', `プリセット${index + 1} ${field.getAttribute('aria-label')}`));
+      }
+    }
+  });
 }
 
 function validateForm(form) {
