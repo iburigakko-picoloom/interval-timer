@@ -13,12 +13,12 @@ import {
   buildTimerSteps,
   normalizeTimerSnapshot,
   advanceTimerSnapshot
-} from './app-core.js?v=47';
-import { withCrossTabStorageMutex } from './storage-lock.js?v=47';
-import { createCuePlayer } from './audio-player.js?v=47';
-import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=47';
-import { icon, labelButton } from './ui-icons.js?v=47';
-import { sortable } from './sortable.js?v=47';
+} from './app-core.js?v=48';
+import { withCrossTabStorageMutex } from './storage-lock.js?v=48';
+import { createCuePlayer } from './audio-player.js?v=48';
+import { enhanceDuration, durationSeconds, setDuration } from './duration-input.js?v=48';
+import { icon, labelButton } from './ui-icons.js?v=48';
+import { sortable } from './sortable.js?v=48';
 
 const $ = (id) => document.getElementById(id);
 const VIEWS = new Set(['home', 'quick', 'quickSettings', 'menu', 'combo', 'savedMenus', 'savedCombos', 'run']);
@@ -69,6 +69,10 @@ const cuePlayer = createCuePlayer({
 cuePlayer.prepare('ready');
 let screenWakeLock = null;
 let wakeLockRequest = null;
+let backgroundAudioUntil = 0;
+let backgroundAudioPending = false;
+let backgroundAudioGeneration = 0;
+let backgroundAudioRetryAfter = 0;
 let noticeTimer = null;
 let timerPersistSecond = null;
 let handlingHistory = false;
@@ -227,6 +231,8 @@ function bindEvents() {
   window.addEventListener('popstate', () => void handlePopState());
   window.addEventListener('storage', handleStorageSync);
   window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('pagehide', () => { if (state.timer.active) { tick(); persistTimer(); } });
+  window.addEventListener('pageshow', handleVisibilityChange);
 }
 
 function updateQuickSummary() {
@@ -1020,6 +1026,7 @@ function emptyTimer() {
 }
 
 function start(blocks, title) {
+  cancelBackgroundAudio();
   const steps = buildTimerSteps(blocks, 5);
   if (!steps.length) {
     showNotice('タイマーを開始できませんでした', 'error');
@@ -1096,6 +1103,7 @@ function tick() {
     timerPersistSecond = totalSecond;
     persistTimer();
   }
+  if (document.visibilityState !== 'visible' && backgroundAudioUntil - Date.now() < 60000) void scheduleBackgroundAudio();
 }
 
 function nextStep(fromSkip = false, silent = false) {
@@ -1129,6 +1137,7 @@ function nextStep(fromSkip = false, silent = false) {
 function pauseToggle() {
   const timer = state.timer;
   if (!timer.active) return;
+  cancelBackgroundAudio();
 
   if (timer.paused) {
     void cuePlayer.unlock();
@@ -1149,6 +1158,7 @@ function pauseToggle() {
 
 function skipStep() {
   if (!state.timer.active) return;
+  cancelBackgroundAudio();
   if (!state.timer.paused) tick();
   nextStep(true);
 }
@@ -1176,12 +1186,13 @@ async function stop(done) {
 
 function completeTimer() {
   void playCue('complete');
-  finishTimerSession();
+  finishTimerSession({ preserveAudio: true });
   show('home', { history: 'replace' });
   showNotice('メニューが完了しました');
 }
 
-function finishTimerSession({ clearStorage = true } = {}) {
+function finishTimerSession({ clearStorage = true, preserveAudio = false } = {}) {
+  if (!preserveAudio) cancelBackgroundAudio();
   clearInterval(state.timer.id);
   state.timer = emptyTimer();
   timerPersistSecond = null;
@@ -1384,7 +1395,45 @@ async function testSound() {
 }
 
 function playCue(kind) {
+  if (kind !== 'preview' && Date.now() < backgroundAudioUntil) return Promise.resolve(true);
   return cuePlayer.play(kind);
+}
+
+function cancelBackgroundAudio() {
+  backgroundAudioGeneration += 1;
+  backgroundAudioPending = false;
+  backgroundAudioUntil = 0;
+  backgroundAudioRetryAfter = 0;
+  cuePlayer.cancelTimeline();
+}
+
+async function scheduleBackgroundAudio() {
+  const timer = state.timer;
+  if (!timer.active || timer.paused || backgroundAudioPending || Date.now() < backgroundAudioRetryAfter || document.visibilityState === 'visible') return;
+  backgroundAudioPending = true;
+  const generation = backgroundAudioGeneration;
+  const now = Date.now();
+  const until = now + 10 * 60 * 1000;
+  const events = [];
+  let boundary = (timer.lastTickAt || now) + timer.remaining * 1000;
+  for (let index = timer.index; index < timer.steps.length; index += 1) {
+    const start = index === timer.index ? now : boundary - timer.steps[index].duration * 1000;
+    for (let second = 3; second >= 1; second -= 1) {
+      const at = boundary - second * 1000;
+      if (at > now && at > start && at <= until) events.push({ at, kind: 'countdown' });
+    }
+    if (boundary > until) break;
+    const next = timer.steps[index + 1];
+    if (boundary > now) events.push({ at: boundary, kind: next ? (next.phase === 'WORK' ? 'work' : 'rest') : 'complete' });
+    if (!next) break;
+    boundary += next.duration * 1000;
+  }
+  const played = await cuePlayer.scheduleTimeline(events);
+  if (generation !== backgroundAudioGeneration) return;
+  backgroundAudioPending = false;
+  // Back off on unavailable audio rather than retrying every 250 ms.
+  backgroundAudioUntil = played ? until : 0;
+  backgroundAudioRetryAfter = played ? 0 : Date.now() + 30000;
 }
 
 function playCurrentPhaseCue() {
@@ -1466,9 +1515,12 @@ function handleVisibilityChange() {
   if (!state.timer.active) return;
   if (document.visibilityState === 'visible' && !state.timer.paused) {
     tick();
+    if (state.timer.active) cancelBackgroundAudio();
     requestWakeLock();
   } else {
+    tick();
     persistTimer();
+    if (!state.timer.paused) void scheduleBackgroundAudio();
   }
 }
 

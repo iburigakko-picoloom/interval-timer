@@ -328,5 +328,31 @@ export function createCuePlayer({
     }
   }
 
-  return Object.freeze({ play, setVolume, unlock, prepare });
+  function cancelTimeline() {
+    playbackId += 1;
+    stopPlaying();
+  }
+
+  async function scheduleTimeline(events) {
+    const id = ++playbackId;
+    const current = await unlockWebAudio();
+    if (!current || id !== playbackId || volume === 0) return false;
+    stopPlaying();
+    try {
+      for (const event of events) {
+        const tone = CUE_TONES[event.kind];
+        const offset = (event.at - Date.now()) / 1000;
+        if (!tone || offset < 0) continue;
+        for (let i = 0; i < (tone.repeats || 1); i += 1) {
+          scheduleWebAudioTone(current, tone, offset + i * (tone.duration + (tone.gap || 0)));
+        }
+      }
+      return true;
+    } catch {
+      stopPlaying();
+      return false;
+    }
+  }
+
+  return Object.freeze({ play, setVolume, unlock, prepare, scheduleTimeline, cancelTimeline });
 }
